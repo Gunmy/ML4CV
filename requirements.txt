@@ -1,0 +1,17 @@
+# Data Manipulation & Machine Learning
+pandas>=2.0.0
+scikit-learn>=1.2.2
+
+# PyTorch & Torchvision (Computer Vision)
+# Note: It's usually best to install PyTorch according to your CUDA version
+# from the official site (https://pytorch.org/get-started/locally/), 
+# but these are the standard PyPI packages.
+torch>=2.0.0
+torchvision>=0.15.0
+
+# Image Processing
+Pillow>=9.5.0
+
+# Jupyter environment (since this is a notebook)
+jupyter>=1.0.0
+ipython>=8.12.0
