@@ -1,8 +1,47 @@
-pandas
-scikit-learn
-torch
-torchvision
-Pillow
-matplotlib
-tqdm
-timm
+# ═══════════════════════════════════════════════════════════════════
+# Humpback Whale Identification — Python Dependencies
+# ═══════════════════════════════════════════════════════════════════
+#
+# INSTALL GPU-ENABLED PYTORCH FIRST (do this before pip install -r):
+#
+#   For CUDA 11.8:
+#     pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+#
+#   For CUDA 12.1:
+#     pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+#
+#   For CUDA 12.4 (latest):
+#     pip install torch torchvision --index-url https://download.pytorch.org/whl/cu124
+#
+#   Check your CUDA version with:  nvidia-smi
+#   Check PyTorch sees your GPU with:  python -c "import torch; print(torch.cuda.is_available())"
+#
+# THEN install the rest:
+#   pip install -r requirements.txt
+#
+# ═══════════════════════════════════════════════════════════════════
+
+# ── Deep learning ────────────────────────────────────────────────
+# torch and torchvision should already be installed with GPU support
+# (see instructions above). These lines act as a version floor check.
+torch>=2.0.0
+torchvision>=0.15.0
+timm>=0.9.0               # Pre-trained model zoo (EfficientNet, ConvNeXt, etc.)
+
+# ── Data & ML ────────────────────────────────────────────────────
+pandas>=1.5.0
+numpy>=1.23.0
+scikit-learn>=1.1.0        # train_test_split with stratification
+
+# ── Image processing ─────────────────────────────────────────────
+Pillow>=9.0.0
+
+# ── Visualization ────────────────────────────────────────────────
+matplotlib>=3.5.0
+
+# ── Progress bars ────────────────────────────────────────────────
+tqdm>=4.64.0
+
+# ── Jupyter ──────────────────────────────────────────────────────
+notebook>=6.5.0            # Jupyter notebook server
+ipywidgets>=8.0.0          # tqdm.auto progress bars render in notebooks
