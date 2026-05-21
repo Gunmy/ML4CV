@@ -1,10 +1,9 @@
 """
-Evaluation for whale identification.
+Evaluation for whale identification during training.
 
-Computes separate metrics for:
-  1. Known whale accuracy  — can the model tell whale A from whale B?
-  2. New whale detection   — can it correctly flag unknowns?
-  3. Overall accuracy      — combined, where correct = right ID or correct "unknown" flag.
+We mostly just evaluate for known whales as this is cheaper than calculating
+AUC for different confidence thresholds
+
 """
 
 import torch
@@ -16,7 +15,6 @@ except ImportError:
     from torch.cuda.amp import autocast
 from tqdm.auto import tqdm
 from typing import Dict
-
 
 @torch.no_grad()
 def evaluate(
@@ -181,14 +179,20 @@ def evaluate_retrieval(
         model:          Trained model.
         gallery_loader: DataLoader for gallery images (typically training set).
         query_loader:   DataLoader for query images (typically validation set).
-        config:         ExperimentConfig (for retrieval_k, confidence_threshold).
+        config:         ExperimentConfig (for confidence_threshold).
         device:         Target device.
 
-    Returns:
-        Dict with retrieval metrics: recall@1, recall@5, new_whale detection, etc.
+    Returns: Dict with
+        retrieval_recall@1 - Recall top 1 for known whales
+        retrieval_recall@5 - Recall top 5 for known whales
+        retrieval_known_total - How many known whales (not new whale)
+        retrieval_new_whale_total - How many new whales (these are ignored mostly)
+        retrieval_mean_pos_sim - Average cosine similarity between known whale queries and their correct matches within the top-k retrieved result
+        retrieval_mean_neg_sim - Average cosine similarity between known whale queries and incorrect matches within the top-k retrieved results
+
     """
     model.eval()
-    k = config.retrieval_k
+    k = 5
 
     # ── Build gallery ────────────────────────────────────────────────────
     gallery_emb, gallery_labels = extract_embeddings(model, gallery_loader, device)
@@ -210,7 +214,6 @@ def evaluate_retrieval(
     recall_at_1 = 0
     recall_at_k = 0
     known_total = 0
-    new_whale_detected = 0
     new_whale_total = 0
     mean_pos_sim = 0.0
     mean_neg_sim = 0.0
@@ -236,11 +239,6 @@ def evaluate_retrieval(
             if true_label == -1:
                 # new_whale: should NOT match anything closely
                 new_whale_total += 1
-                max_sim = topk_sims[i, 0].item()
-                # Use a similarity threshold (higher threshold = stricter matching)
-                # cosine similarity of 0.5 ≈ roughly the same as confidence threshold
-                if max_sim < config.confidence_threshold:
-                    new_whale_detected += 1
             else:
                 # Known whale: correct if true label appears in top-k
                 known_total += 1
@@ -263,9 +261,7 @@ def evaluate_retrieval(
 
     metrics = {
         "retrieval_recall@1": recall_at_1 / max(known_total, 1),
-        "retrieval_recall@k": recall_at_k / max(known_total, 1),
-        "retrieval_k": k,
-        "retrieval_new_whale_detection": new_whale_detected / max(new_whale_total, 1),
+        "retrieval_recall@5": recall_at_k / max(known_total, 1),
         "retrieval_known_total": known_total,
         "retrieval_new_whale_total": new_whale_total,
         "retrieval_mean_pos_sim": mean_pos_sim / max(pos_count, 1),
@@ -273,7 +269,6 @@ def evaluate_retrieval(
     }
 
     print(f"  Recall@1: {metrics['retrieval_recall@1']*100:.2f}%  "
-          f"Recall@{k}: {metrics['retrieval_recall@k']*100:.2f}%  "
-          f"NewWhale Det: {metrics['retrieval_new_whale_detection']*100:.2f}%")
+          f"Recall@{k}: {metrics['retrieval_recall@5']*100:.2f}%  ")
 
     return metrics
