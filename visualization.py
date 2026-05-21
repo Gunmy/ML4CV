@@ -44,9 +44,6 @@ def plot_training_history(metrics: Dict[str, list], title: str = ""):
     if "val_known_acc" in metrics:
         ax.plot(epochs, [x * 100 for x in metrics["val_known_acc"]],
                 "r-o", markersize=4, label="Val (known)")
-    if "val_overall_acc" in metrics:
-        ax.plot(epochs, [x * 100 for x in metrics["val_overall_acc"]],
-                "g-o", markersize=4, label="Val (overall)")
     ax.set_xlabel("Epoch")
     ax.set_ylabel("Accuracy (%)")
     ax.set_title("Accuracy")

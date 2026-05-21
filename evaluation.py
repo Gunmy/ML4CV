@@ -129,8 +129,8 @@ def evaluate(
     return {
         "val_loss": val_loss,
         "val_known_acc": val_known_acc,
-        "val_new_whale_detection": val_new_whale_det,
-        "val_overall_acc": val_overall_acc,
+        #"val_new_whale_detection": val_new_whale_det,
+        #"val_overall_acc": val_overall_acc,
         "val_mean_confidence": val_mean_conf,
         "val_known_total": known_total,
         "val_new_whale_total": new_whale_total,
