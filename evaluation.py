@@ -30,34 +30,34 @@ def evaluate(
     """
     Evaluate the model on a validation/test set.
 
+    Most metrics are just evaluated for known whales to avoid having to calculate
+    whether something would be classified as a new whale or not under different
+    treshold values
+
+    The exception is val_mean_known_conf
+
     Returns a dict with:
-      - val_loss:                 Loss on known whales (ignoring new_whale)
-      - val_known_acc:            Accuracy on samples whose true class is known
-      - val_new_whale_detection:  Fraction of new_whale samples correctly flagged
-                                  (i.e. model's max confidence < threshold)
-      - val_overall_acc:          Combined accuracy
-      - val_mean_confidence:      Average softmax confidence on known whale predictions
+      - val_loss:              Loss on known whales (ignoring new_whale)
+      - val_known_acc:         Top-1 accuracy on known whale samples (in top 1)
+      - val_known_top5_acc:    Top-5 accuracy on known whale samples (in top 5)
+      - val_mean_known_conf:   Average softmax confidence on known whale samples
+      - val_mean_new_whale_conf: Average softmax confidence on new whale samples
+      - val_known_total:       Number of known whale samples
+      - val_new_whale_total:   Number of new whale samples
     """
     model.eval()
-
     running_loss = 0.0
     loss_total = 0
 
     # Known whale metrics
     known_correct = 0
+    known_top5_correct = 0
     known_total = 0
 
-    # New whale detection metrics
-    new_whale_detected = 0  # Correctly flagged as unknown
-    new_whale_total = 0
-
-    # Overall
-    overall_correct = 0
-    overall_total = 0
-
     # Confidence tracking
-    confidence_sum = 0.0
-    confidence_count = 0
+    known_conf_sum = 0.0
+    new_whale_conf_sum = 0.0
+    new_whale_total = 0
 
     pbar = tqdm(loader, desc=f"  Val   Ep {epoch}", leave=False)
 
@@ -85,53 +85,47 @@ def evaluate(
 
         # ── Known whale samples ──────────────────────────────────────────
         if known_mask.sum() > 0:
+            known_probs = probs[known_mask]
             known_preds = preds[known_mask]
             known_labels = labels[known_mask]
             known_conf = max_probs[known_mask]
 
+            # Top-1
             known_correct += (known_preds == known_labels).sum().item()
+
+            # Top-5
+            top5_preds = known_probs.topk(min(5, known_probs.size(1)), dim=1).indices
+            known_top5_correct += (top5_preds == known_labels.unsqueeze(1)).any(dim=1).sum().item()
+
             known_total += known_mask.sum().item()
-
-            confidence_sum += known_conf.sum().item()
-            confidence_count += known_mask.sum().item()
-
-            # For overall accuracy: known whale is correct if prediction matches
-            overall_correct += (known_preds == known_labels).sum().item()
-            overall_total += known_mask.sum().item()
+            known_conf_sum += known_conf.sum().item()
 
         # ── New whale samples (label == -1) ──────────────────────────────
         unknown_mask = labels == -1
         if unknown_mask.sum() > 0:
-            unknown_conf = max_probs[unknown_mask]
-            # A new_whale is "detected" if confidence is below threshold
-            detected = (unknown_conf < config.confidence_threshold).sum().item()
-            new_whale_detected += detected
+            new_whale_conf_sum += max_probs[unknown_mask].sum().item()
             new_whale_total += unknown_mask.sum().item()
-
-            # For overall accuracy: new_whale is correct if flagged as unknown
-            overall_correct += detected
-            overall_total += unknown_mask.sum().item()
 
         # Progress
         if known_total > 0:
             pbar.set_postfix({
-                "known_acc": f"{known_correct / known_total * 100:.1f}%",
-                "nw_det": f"{new_whale_detected / max(new_whale_total, 1) * 100:.1f}%",
+                "top1": f"{known_correct / known_total * 100:.1f}%",
+                "top5": f"{known_top5_correct / known_total * 100:.1f}%",
             })
 
     # ── Compute final metrics ────────────────────────────────────────────
     val_loss = running_loss / max(loss_total, 1)
     val_known_acc = known_correct / max(known_total, 1)
-    val_new_whale_det = new_whale_detected / max(new_whale_total, 1)
-    val_overall_acc = overall_correct / max(overall_total, 1)
-    val_mean_conf = confidence_sum / max(confidence_count, 1)
+    val_known_top5_acc = known_top5_correct / max(known_total, 1)
+    val_mean_known_conf = known_conf_sum / max(known_total, 1)
+    val_mean_new_whale_conf = new_whale_conf_sum / max(new_whale_total, 1)
 
     return {
         "val_loss": val_loss,
         "val_known_acc": val_known_acc,
-        #"val_new_whale_detection": val_new_whale_det,
-        #"val_overall_acc": val_overall_acc,
-        "val_mean_confidence": val_mean_conf,
+        "val_known_top5_acc": val_known_top5_acc,
+        "val_mean_known_conf": val_mean_known_conf,
+        "val_mean_new_whale_conf": val_mean_new_whale_conf,
         "val_known_total": known_total,
         "val_new_whale_total": new_whale_total,
     }

@@ -50,14 +50,9 @@ def plot_training_history(metrics: Dict[str, list], title: str = ""):
     ax.legend()
     ax.grid(True, alpha=0.3)
 
-    # ── New whale detection + Learning rate ──────────────────────────────
+    # ── Learning rate ────────────────────────────────────────────────────
     ax = axes[2]
-    if "val_new_whale_detection" in metrics:
-        ax.plot(epochs, [x * 100 for x in metrics["val_new_whale_detection"]],
-                "m-o", markersize=4, label="New whale detection %")
     ax.set_xlabel("Epoch")
-    ax.set_ylabel("Detection Rate (%)", color="m")
-    ax.tick_params(axis="y", labelcolor="m")
     ax.grid(True, alpha=0.3)
 
     # LR on secondary axis
@@ -68,7 +63,7 @@ def plot_training_history(metrics: Dict[str, list], title: str = ""):
         ax2.tick_params(axis="y", labelcolor="k")
         ax2.legend(loc="lower right")
 
-    ax.set_title("New Whale Detection & LR")
+    ax.set_title("Learning Rate")
     ax.legend(loc="upper left")
 
     # ── Freeze boundary ──────────────────────────────────────────────────
