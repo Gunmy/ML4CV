@@ -63,6 +63,5 @@
   "pk_p": 16,
   "pk_k": 4,
   "pk_min_samples": 2,
-  "retrieval_k": 5,
   "init_from_checkpoint": "experiments/20260402_175215_baseline_effnetb5_focal_bd5dccca/checkpoints/best.pth"
 }
