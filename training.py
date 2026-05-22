@@ -349,8 +349,11 @@ def train(config: ExperimentConfig, data: Dict, device: torch.device,
             val_metrics = evaluate_retrieval(
                 model, gallery_loader, val_loader, config, device,
             )
-            # Map retrieval metrics to standard names for early stopping
-            val_metrics["val_loss"] = train_metrics["train_loss"]  # No val loss for triplet
+            # Note: We do NOT calculate a validation loss for triplet loss.
+            # Triplet loss requires every batch to have multiple images of the same whale.
+            # Since random validation batches almost never have matching whales, the loss would just be 0.
+            # Instead, we measure performance using retrieval_recall@1, which simply tests 
+            # if the closest image in the database is the correct whale.
         else:
             val_metrics = evaluate(model, val_loader, criterion, config, device, epoch)
 
