@@ -32,3 +32,9 @@ Starting training: 30 epochs, effective batch size = 24
 [00:07:52] Epoch  12/30 [UNFROZEN] | Train Loss: 1.2949  Acc: 95.2% | Val Known Acc: 25.1%  NewWhale Det: 90.0% | LR: 7.35e-05 | Time: 37.7m
 [00:46:44] Epoch  13/30 [UNFROZEN] | Train Loss: 1.2645  Acc: 96.9% | Val Known Acc: 27.6%  NewWhale Det: 88.9% | LR: 6.81e-05 | Time: 38.7m
 [00:46:56]   ✓ New best model saved (epoch 13, val_known_acc=0.2762)
+[01:22:26] Loading checkpoint: experiments\20260402_175215_baseline_effnetb5_focal_bd5dccca\checkpoints\best.pth
+[01:22:33] Resuming from epoch 14
+[01:27:58] Loading checkpoint: experiments\20260402_175215_baseline_effnetb5_focal_bd5dccca\checkpoints\best.pth
+[01:28:00] Resuming from epoch 14
+[01:29:35] Loading checkpoint: experiments\20260402_175215_baseline_effnetb5_focal_bd5dccca\checkpoints\best.pth
+[01:29:36] Resuming from epoch 14
