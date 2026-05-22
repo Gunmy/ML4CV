@@ -44,6 +44,9 @@ def plot_training_history(metrics: Dict[str, list], title: str = ""):
     if "val_known_acc" in metrics:
         ax.plot(epochs, [x * 100 for x in metrics["val_known_acc"]],
                 "r-o", markersize=4, label="Val (known)")
+    elif "retrieval_recall@1" in metrics:
+        ax.plot(epochs, [x * 100 for x in metrics["retrieval_recall@1"]],
+                "r-o", markersize=4, label="Val (Recall@1)")
     ax.set_xlabel("Epoch")
     ax.set_ylabel("Accuracy (%)")
     ax.set_title("Accuracy")
@@ -120,7 +123,7 @@ def compare_experiments(experiments_root: str,
         epochs = range(1, len(values) + 1)
 
         # For accuracy metrics, display as percentage
-        if "acc" in metric or "detection" in metric:
+        if "acc" in metric or "recall" in metric:
             values = [v * 100 for v in values]
             ax.set_ylabel(f"{metric} (%)")
         else:

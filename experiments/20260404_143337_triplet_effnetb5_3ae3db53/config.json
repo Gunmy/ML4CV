@@ -50,7 +50,7 @@
   "aug_blur_sigma_min": 0.1,
   "aug_blur_sigma_max": 1.0,
   "early_stopping_patience": 6,
-  "early_stopping_metric": "val_known_acc",
+  "early_stopping_metric": "retrieval_recall@1",
   "save_every_n_epochs": 1,
   "keep_top_k_checkpoints": 3,
   "auto_resume": true,
