@@ -350,7 +350,6 @@ def train(config: ExperimentConfig, data: Dict, device: torch.device,
                 model, gallery_loader, val_loader, config, device,
             )
             # Map retrieval metrics to standard names for early stopping
-            val_metrics["val_known_acc"] = val_metrics.get("retrieval_recall@1", 0)
             val_metrics["val_loss"] = train_metrics["train_loss"]  # No val loss for triplet
         else:
             val_metrics = evaluate(model, val_loader, criterion, config, device, epoch)
@@ -358,7 +357,8 @@ def train(config: ExperimentConfig, data: Dict, device: torch.device,
         # ── Step epoch-level scheduler ───────────────────────────────────
         if scheduler is not None and not scheduler_is_batch:
             if config.scheduler == "plateau":
-                scheduler.step(val_metrics.get("val_known_acc", 0))
+                scheduler_metric = val_metrics.get(config.early_stopping_metric, 0)
+                scheduler.step(scheduler_metric)
             else:
                 scheduler.step()
 
@@ -371,9 +371,7 @@ def train(config: ExperimentConfig, data: Dict, device: torch.device,
 
         # ── Print epoch summary ──────────────────────────────────────────
         phase = "FROZEN" if is_frozen else "UNFROZEN"
-        acc_key = "val_known_acc"
-        if config.loss_type == "triplet":
-            acc_key = "retrieval_recall@1"
+        acc_key = config.early_stopping_metric
 
         manager.log(
             f"Epoch {epoch:>3d}/{config.epochs} [{phase}] | "
