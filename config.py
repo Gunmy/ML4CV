@@ -109,9 +109,6 @@ class ExperimentConfig:
     pk_k: int = 4                      # Number of images per identity per batch
     pk_min_samples: int = 2            # Minimum images a class needs for PK sampling
 
-    # Retrieval evaluation
-    retrieval_k: int = 5               # k for k-NN retrieval evaluation
-
     # Pretrained checkpoint to initialize from (e.g. best baseline before metric learning)
     init_from_checkpoint: Optional[str] = None  # Path to a .pth file
 

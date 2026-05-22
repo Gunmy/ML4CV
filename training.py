@@ -372,17 +372,14 @@ def train(config: ExperimentConfig, data: Dict, device: torch.device,
         # ── Print epoch summary ──────────────────────────────────────────
         phase = "FROZEN" if is_frozen else "UNFROZEN"
         acc_key = "val_known_acc"
-        nw_key = "val_new_whale_detection"
         if config.loss_type == "triplet":
             acc_key = "retrieval_recall@1"
-            nw_key = "retrieval_new_whale_detection"
 
         manager.log(
             f"Epoch {epoch:>3d}/{config.epochs} [{phase}] | "
             f"Train Loss: {train_metrics['train_loss']:.4f}  "
             f"Acc: {train_metrics['train_acc']*100:.1f}% | "
             f"Val {acc_key}: {val_metrics.get(acc_key, 0)*100:.1f}%  "
-            f"NewWhale Det: {val_metrics.get(nw_key, 0)*100:.1f}% | "
             f"LR: {train_metrics['lr']:.2e} | "
             f"Time: {all_metrics['epoch_time_min']:.1f}m"
         )
