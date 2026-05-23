@@ -38,3 +38,5 @@ Training complete in 567.1 minutes.
 [01:41:55] Matching experiment is already completed. Skipping training and reusing existing checkpoints.
 [01:41:56] Loading checkpoint: experiments\20260404_143337_triplet_effnetb5_3ae3db53\checkpoints\best.pth
 [01:41:57] Resuming from epoch 5
+[23:19:35] Loading checkpoint: experiments\20260404_143337_triplet_effnetb5_3ae3db53\checkpoints\best.pth
+[23:19:36] Resuming from epoch 5
