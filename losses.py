@@ -191,6 +191,64 @@ class TripletLoss(nn.Module):
 
         return loss / max(num_valid, 1)
 
+class ContrastiveLoss(nn.Module):
+    """
+    Contrastive Loss with positive and negative margins.
+
+    For positive pairs (same class):
+        L = ½ · max(0, D - m+)²
+    For negative pairs (different class):
+        L = ½ · max(0, m- - D)²
+
+    The positive margin m+ prevents embedding collapse by not requiring
+    same-class images to map to the exact same point — once they're
+    within m+ distance, the loss is zero.
+
+    Args:
+        pos_margin: m+ — target maximum distance for positive pairs.
+        neg_margin: m- — minimum distance for negative pairs. Must be > pos_margin.
+    """
+
+    def __init__(self, pos_margin: float = 0.2, neg_margin: float = 1.0):
+        super().__init__()
+        assert neg_margin > pos_margin, "neg_margin must be > pos_margin"
+        self.pos_margin = pos_margin
+        self.neg_margin = neg_margin
+
+    def forward(self, embeddings: torch.Tensor, labels: torch.Tensor) -> torch.Tensor:
+        """
+        Args:
+            embeddings: (B, D) L2-normalized embedding vectors.
+            labels:     (B,) integer class labels.
+
+        Returns:
+            Scalar loss. Also stores self.num_active_pairs and
+            self.num_valid_pairs for monitoring.
+        """
+        # Pairwise Euclidean distances
+        dist_mat = torch.cdist(embeddings, embeddings, p=2)  # (B, B)
+
+        B = embeddings.size(0)
+        labels_eq = labels.unsqueeze(0) == labels.unsqueeze(1)
+        eye_mask = torch.eye(B, dtype=torch.bool, device=embeddings.device)
+
+        pos_mask = labels_eq & ~eye_mask   # same class, not self
+        neg_mask = ~labels_eq              # different class
+
+        # Positive pairs: penalize if distance > pos_margin
+        pos_distances = dist_mat[pos_mask]
+        pos_loss = F.relu(pos_distances - self.pos_margin).pow(2)
+
+        # Negative pairs: penalize if distance < neg_margin
+        neg_distances = dist_mat[neg_mask]
+        neg_loss = F.relu(self.neg_margin - neg_distances).pow(2)
+
+        # Track for monitoring (same pattern as TripletLoss)
+        self.num_active_pairs = (pos_loss > 0).sum().item() + (neg_loss > 0).sum().item()
+        self.num_valid_pairs = max(len(pos_distances) + len(neg_distances), 1)
+
+        total_loss = 0.5 * (pos_loss.sum() + neg_loss.sum()) / self.num_valid_pairs
+        return total_loss
 
 def build_loss(config, class_counts: np.ndarray, device: torch.device) -> nn.Module:
     """
