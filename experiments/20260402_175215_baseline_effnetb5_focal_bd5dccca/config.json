@@ -53,5 +53,5 @@
   "early_stopping_metric": "val_known_acc",
   "save_every_n_epochs": 1,
   "keep_top_k_checkpoints": 3,
-  "auto_resume": false
+  "auto_resume": true
 }

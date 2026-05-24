@@ -84,6 +84,7 @@ def train_one_epoch(
 
         # ── Forward pass (branched by loss type) ─────────────────────────
         if scaler is not None:
+            # For mixed precision
             with autocast(device_type='cuda'):
                 if is_triplet:
                     embeddings = model(images)
@@ -107,6 +108,7 @@ def train_one_epoch(
                 loss = criterion(logits, labels) / config.accumulation_steps
             loss.backward()
 
+        # For simulating larger batches
         accumulation_counter += 1
 
         # ── Step optimizer every accumulation_steps batches ──────────────
@@ -114,6 +116,7 @@ def train_one_epoch(
             if scaler is not None:
                 scaler.unscale_(optimizer)
 
+            # Make sure learning doesnt spike
             grad_norm = nn.utils.clip_grad_norm_(
                 model.parameters(), config.max_grad_norm
             ).item()
@@ -130,12 +133,14 @@ def train_one_epoch(
             if scheduler is not None and scheduler_is_batch_level:
                 scheduler.step()
 
-        # ── Metrics ──────────────────────────────────────────────────────
+        # ── Metrics ────── Dont track
         with torch.no_grad():
             if is_triplet:
                 total += labels.size(0)
                 running_loss += loss.item() * config.accumulation_steps * labels.size(0)
             else:
+                # Dont really need this check since we filter
+                # new_whales out from training, but nice to have
                 mask = labels != -1
                 if mask.sum() > 0:
                     preds = logits[mask].argmax(dim=1)
