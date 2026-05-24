@@ -62,7 +62,7 @@ class ExperimentConfig:
     plateau_patience: int = 3
 
     # ── Loss ─────────────────────────────────────────────────────────────
-    loss_type: str = "focal"           # "focal", "ce", "triplet", or "arcface_ce"
+    loss_type: str = "focal"           # "focal", "ce", "triplet", "arcface_ce", or "contrastive"
     focal_gamma: float = 2.0
     focal_alpha: Optional[str] = "class_weights"  # "class_weights", "balanced", or None
     label_smoothing: float = 0.1
@@ -102,6 +102,10 @@ class ExperimentConfig:
     # Triplet loss parameters (only used when loss_type="triplet")
     triplet_margin: float = 0.3        # Margin in the triplet loss hinge
     triplet_mining: str = "semi_hard"  # "semi_hard", "hard", or "all"
+
+    # Contrastive loss parameters (only used when loss_type="contrastive")
+    contrastive_pos_margin: float = 0.2   # m+ — max distance for positive pairs before penalty
+    contrastive_neg_margin: float = 1.0   # m- — min distance for negative pairs before penalty
 
     # PK sampling for metric learning (only used when pk_sampling=True)
     pk_sampling: bool = False          # Use PK sampler instead of random shuffle
@@ -172,6 +176,8 @@ class ExperimentConfig:
             base += f"(s={self.arcface_scale},m={self.arcface_margin})"
         if self.loss_type == "triplet":
             base += f" | triplet(m={self.triplet_margin},{self.triplet_mining})"
+        if self.loss_type == "contrastive":
+            base += f" | contrastive(m+={self.contrastive_pos_margin},m-={self.contrastive_neg_margin})"
         if self.pk_sampling:
             base += f" | PK({self.pk_p}×{self.pk_k})"
         return base

@@ -72,7 +72,7 @@ def train_one_epoch(
     grad_norms = []
     accumulation_counter = 0
 
-    is_triplet = config.loss_type == "triplet"
+    is_embedding_loss = config.loss_type in ("triplet", "contrastive")
     is_arcface = config.head_type == "arcface"
 
     optimizer.zero_grad()
@@ -86,7 +86,7 @@ def train_one_epoch(
         if scaler is not None:
             # For mixed precision
             with autocast(device_type='cuda'):
-                if is_triplet:
+                if is_embedding_loss:
                     embeddings = model(images)
                     loss = criterion(embeddings, labels) / config.accumulation_steps
                 elif is_arcface:
@@ -97,7 +97,7 @@ def train_one_epoch(
                     loss = criterion(logits, labels) / config.accumulation_steps
             scaler.scale(loss).backward()
         else:
-            if is_triplet:
+            if is_embedding_loss:
                 embeddings = model(images)
                 loss = criterion(embeddings, labels) / config.accumulation_steps
             elif is_arcface:
@@ -135,7 +135,7 @@ def train_one_epoch(
 
         # ── Metrics ────── Dont track
         with torch.no_grad():
-            if is_triplet:
+            if is_embedding_loss:
                 total += labels.size(0)
                 running_loss += loss.item() * config.accumulation_steps * labels.size(0)
             else:
@@ -151,8 +151,11 @@ def train_one_epoch(
         # ── Progress bar ─────────────────────────────────────────────────
         current_loss = running_loss / max(total, 1)
         current_acc = correct / max(total, 1)
-        if is_triplet:
-            active_ratio = criterion.num_active_triplets / max(criterion.num_valid_triplets, 1)
+        if is_embedding_loss:
+            if hasattr(criterion, "num_active_triplets"):
+                active_ratio = criterion.num_active_triplets / max(criterion.num_valid_triplets, 1)
+            else:
+                active_ratio = criterion.num_active_pairs / max(criterion.num_valid_pairs, 1)
             pbar.set_postfix({
                 "loss": f"{current_loss:.4f}",
                 "active": f"{active_ratio * 100:.0f}%",
@@ -343,10 +346,11 @@ def train(config: ExperimentConfig, data: Dict, device: torch.device,
         )
 
         # ── Validate ─────────────────────────────────────────────────────
-        # For triplet loss, classification-based eval still works — the model
-        # has no classifier, but we still extract embeddings and can do retrieval.
+        # For triplet and contrastive loss, classification-based eval still works 
+        # even though the model has no classifier, we can still extract embeddings 
+        # and do retrieval using them.
         # We pass criterion; evaluate() handles ignore_index for unknown labels.
-        if config.loss_type == "triplet":
+        if config.loss_type in ("triplet", "contrastive"):
             # For triplet: do retrieval evaluation instead of classification eval
             from evaluation import evaluate_retrieval
             from dataset import build_dataloaders as build_std_loaders
