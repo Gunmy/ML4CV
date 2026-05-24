@@ -173,18 +173,16 @@ def sweep_thresholds(
     max_score = min(1.0, float(np.max(scores_np)))
     
     thresholds = np.linspace(min_score, max_score, num_steps)
-    map5_scores = []
+    map5_scores = np.zeros(len(thresholds), dtype=float)
     
-    for t in tqdm(thresholds, desc="Sweeping Thresholds", leave=False):
+    for i, t in enumerate(tqdm(thresholds, desc="Sweeping Thresholds", leave=False)):
         final_preds = np.array([
             insert_new_whale(p, s, t) 
             for p, s in zip(preds_np, scores_np)
         ])
         
-        map5 = calculate_map5(final_preds, labels_np)
-        map5_scores.append(map5)
+        map5_scores[i] = calculate_map5(final_preds, labels_np)
         
-    map5_scores = np.array(map5_scores)
-    best_idx = np.argmax(map5_scores)
+    best_idx = int(np.argmax(map5_scores))
     
     return thresholds, map5_scores, float(thresholds[best_idx]), float(map5_scores[best_idx])

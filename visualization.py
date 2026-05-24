@@ -9,6 +9,7 @@ from typing import List, Optional, Dict
 import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
+import torch
 
 matplotlib.rcParams["figure.dpi"] = 120
 matplotlib.rcParams["figure.figsize"] = (14, 5)
@@ -163,3 +164,77 @@ def list_experiments(experiments_root: str):
             best = f"{best:.4f}"
 
         print(f"{eid:<45} {str(best):>12} {str(best_ep):>10}  {summary}")
+
+def plot_evaluation(
+    scores: torch.Tensor,
+    labels: torch.Tensor,
+    thresholds: np.ndarray, 
+    map5_scores: np.ndarray, 
+    best_threshold: float, 
+    best_map5: float,
+    model_name: str = "Model"
+):
+    """
+    Visualizes the final evaluation metrics.
+    Left: Box plot showing the separation of confidence scores.
+    Right: MAP@5 performance across all thresholds.
+    """
+    known_scores = scores[labels != -1, 0].numpy()
+    new_scores = scores[labels == -1, 0].numpy()
+
+    fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(15, 6))
+    
+    # ── Subplot 1: Box Plot of Confidences ──
+    data_to_plot = [known_scores]
+    tick_labels = ["Known Whales\n(Should be high)"]
+    colors = ['#2ca02c'] # Green
+    
+    if len(new_scores) > 0:
+        data_to_plot.append(new_scores)
+        tick_labels.append("New Whales\n(Should be low)")
+        colors.append('#d62728') # Red
+        
+    bplot = ax1.boxplot(
+        data_to_plot, 
+        labels=tick_labels, 
+        patch_artist=True, 
+        widths=0.5,
+        boxprops=dict(facecolor="white", color="black"),
+        medianprops=dict(color="black", linewidth=2)
+    )
+
+    # Color the boxes
+    for patch, color in zip(bplot['boxes'], colors):
+        patch.set_facecolor(color)
+        patch.set_alpha(0.6)
+        
+    # Draw the threshold with an explanatory legend
+    threshold_label = (f"Optimal Cutoff ({best_threshold:.2f})\n"
+                       f"Predictions below this line\n"
+                       f"are overridden to 'new_whale'")
+    
+    ax1.axhline(best_threshold, color='black', linestyle='dashed', linewidth=2, label=threshold_label)
+    
+    ax1.set_title(f"Distribution of Top-1 Prediction Scores\n({model_name})")
+    ax1.set_ylabel("Raw Score (Softmax Probability or Cosine Similarity)")
+    ax1.legend(loc="best", framealpha=0.9)
+    ax1.grid(True, axis='y', alpha=0.3)
+
+    # ── Subplot 2: MAP@5 vs Threshold Curve ──
+    ax2.plot(thresholds, map5_scores, color="#1f77b4", linewidth=2, label="Simulated Kaggle Score")
+    
+    # Clean marker with drop-line and informative legend
+    best_label = f"Peak Performance\nMAP@5 = {best_map5:.4f}\n(at threshold = {best_threshold:.2f})"
+    ax2.plot(best_threshold, best_map5, marker='o', markersize=8, color="#ff7f0e", label=best_label)
+    
+    ax2.vlines(x=best_threshold, ymin=min(map5_scores), ymax=best_map5, 
+               colors='#ff7f0e', linestyles='dashed', alpha=0.7)
+    
+    ax2.set_title(f"Kaggle Metric (MAP@5) vs. new_whale Threshold\n({model_name})")
+    ax2.set_xlabel("Score Threshold Applied to Predictions")
+    ax2.set_ylabel("Mean Average Precision @ 5 (MAP@5)")
+    ax2.legend(loc="best", framealpha=0.9)
+    ax2.grid(True, alpha=0.3)
+
+    plt.tight_layout()
+    plt.show()
