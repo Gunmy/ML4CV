@@ -221,7 +221,7 @@ def plot_evaluation(
     ax1.grid(True, axis='y', alpha=0.3)
 
     # ── Subplot 2: MAP@5 vs Threshold Curve ──
-    ax2.plot(thresholds, map5_scores, color="#1f77b4", linewidth=2, label="Simulated Kaggle Score")
+    ax2.plot(thresholds, map5_scores, color="#1f77b4", linewidth=2, label="Evaluation Metric")
     
     # Clean marker with drop-line and informative legend
     best_label = f"Peak Performance\nMAP@5 = {best_map5:.4f}\n(at threshold = {best_threshold:.2f})"
@@ -230,7 +230,7 @@ def plot_evaluation(
     ax2.vlines(x=best_threshold, ymin=min(map5_scores), ymax=best_map5, 
                colors='#ff7f0e', linestyles='dashed', alpha=0.7)
     
-    ax2.set_title(f"Kaggle Metric (MAP@5) vs. new_whale Threshold\n({model_name})")
+    ax2.set_title(f"MAP@5 Performance vs. new_whale Threshold\n({model_name})")
     ax2.set_xlabel("Score Threshold Applied to Predictions")
     ax2.set_ylabel("Mean Average Precision @ 5 (MAP@5)")
     ax2.legend(loc="best", framealpha=0.9)

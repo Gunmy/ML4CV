@@ -142,7 +142,7 @@ def insert_new_whale(preds: np.ndarray, scores: np.ndarray, threshold: float) ->
     return np.array(result)
 
 def calculate_map5(predictions: np.ndarray, labels: np.ndarray) -> float:
-    """Calculates Kaggle's Mean Average Precision @ 5."""
+    """Calculates Mean Average Precision @ 5 (MAP@5)."""
     map_score = 0.0
     for preds, true_label in zip(predictions, labels):
         matches = np.where(preds == true_label)[0]
