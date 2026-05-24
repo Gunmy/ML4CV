@@ -20,6 +20,8 @@ from torchvision import transforms
 from PIL import Image
 from sklearn.model_selection import train_test_split
 
+from config import ExperimentConfig
+
 
 # ── Augmentation Pipelines ───────────────────────────────────────────────
 
@@ -472,3 +474,56 @@ def build_metric_dataloaders(config, data: Dict) -> Tuple[DataLoader, DataLoader
     )
 
     return train_loader, val_loader
+
+def build_retrieval_eval_loaders(config, data):
+    """Deterministic gallery/query loaders for comparable retrieval metrics."""
+    image_dir = os.path.join(config.data_dir, "train")
+    eval_transform = build_val_transform(config)
+
+    gallery_dataset = WhaleDataset(
+        df=data["train_df"],
+        image_dir=image_dir,
+        id_to_idx=data["id_to_idx"],
+        transform=eval_transform,
+    )
+    query_dataset = WhaleDataset(
+        df=data["val_df"],
+        image_dir=image_dir,
+        id_to_idx=data["id_to_idx"],
+        transform=eval_transform,
+    )
+
+    batch_size = config.batch_size * 2
+    gallery_loader = DataLoader(
+        gallery_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=config.num_workers,
+        pin_memory=True,
+        drop_last=False,
+    )
+    query_loader = DataLoader(
+        query_dataset,
+        batch_size=batch_size,
+        shuffle=False,
+        num_workers=config.num_workers,
+        pin_memory=True,
+        drop_last=False,
+    )
+    return gallery_loader, query_loader
+
+def get_eval_config_and_data() -> tuple[ExperimentConfig, dict]:
+    """
+    Returns
+        standard eval config
+        data
+    
+    """
+    config = ExperimentConfig(
+        data_dir="data",
+        seed=42,
+        stratified_split=True,
+    )
+    data = prepare_data(config)
+
+    return config, data
