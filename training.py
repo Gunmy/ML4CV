@@ -133,8 +133,8 @@ def train_one_epoch(
             if scheduler is not None and scheduler_is_batch_level:
                 scheduler.step()
 
-        # ── Metrics ────── Dont track
-        with torch.no_grad():
+        # ── Metrics ──────
+        with torch.no_grad(): # disables gradient tracking for the operations inside the block
             if is_embedding_loss:
                 total += labels.size(0)
                 running_loss += loss.item() * config.accumulation_steps * labels.size(0)
