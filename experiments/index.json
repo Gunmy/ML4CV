@@ -1,2 +1,73 @@
 {
+  "20260525_195030_baseline_effnetb5_focal_6879e346": {
+    "summary": "efficientnet_b5 | 456px | focal(\u03b3=2.0) | lr=0.0001/0.001 | freeze=3ep | bs=12\u00d72",
+    "name": "baseline_effnetb5_focal",
+    "description": "EfficientNet-B5 with Focal Loss, freeze 3 epochs, 456px",
+    "created": "2026-05-25T19:50:30.751271",
+    "path": "experiments/20260525_195030_baseline_effnetb5_focal_6879e346"
+  },
+  "20260525_195229_baseline_effnetb5_focal_6879e346": {
+    "summary": "efficientnet_b5 | 456px | focal(\u03b3=2.0) | lr=0.0001/0.001 | freeze=3ep | bs=12\u00d72",
+    "name": "baseline_effnetb5_focal",
+    "description": "EfficientNet-B5 with Focal Loss, freeze 3 epochs, 456px",
+    "created": "2026-05-25T19:52:29.680977",
+    "path": "experiments/20260525_195229_baseline_effnetb5_focal_6879e346",
+    "completed": "2026-05-25T20:47:30.791494",
+    "best_epoch": 21,
+    "best_metric": 0.5954088952654233,
+    "final_metrics": {
+      "train_loss": 1.05979774977623,
+      "train_acc": 0.9988776655443322,
+      "grad_norm": 2.5752664932899605,
+      "lr": 1e-06,
+      "val_loss": 2.4079560426249564,
+      "val_known_acc": 0.5954088952654233,
+      "val_known_top5_acc": 0.7073170731707317,
+      "val_mean_known_conf": 0.24982039726618543,
+      "val_mean_new_whale_conf": 0.20048225308641976,
+      "val_known_total": 697,
+      "val_new_whale_total": 405,
+      "epoch_time_min": 1.8664256811141968,
+      "epoch": 24
+    }
+  },
+  "20260525_210523_arcface_effnetb5_ae240f1b": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=12\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-25T21:24:29.858209",
+    "path": "experiments/20260525_210523_arcface_effnetb5_ae240f1b"
+  },
+  "20260525_212517_arcface_effnetb5_443a18e1": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=64\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-25T21:25:17.923505",
+    "path": "experiments/20260525_212517_arcface_effnetb5_443a18e1"
+  },
+  "20260525_213055_arcface_effnetb5_a3fe4406": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=32\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-25T21:30:55.726903",
+    "path": "experiments/20260525_213055_arcface_effnetb5_a3fe4406",
+    "completed": "2026-05-25T22:17:19.952998",
+    "best_epoch": 19,
+    "best_metric": 0.6542324246771879,
+    "final_metrics": {
+      "train_loss": 7.402073915763821,
+      "train_acc": 0.14672085201793722,
+      "grad_norm": 38.243002499852864,
+      "lr": 1e-06,
+      "val_loss": 2.202258283814878,
+      "val_known_acc": 0.6542324246771879,
+      "val_known_top5_acc": 0.7647058823529411,
+      "val_mean_known_conf": 0.5649218566106415,
+      "val_mean_new_whale_conf": 0.37151752165806146,
+      "val_known_total": 697,
+      "val_new_whale_total": 405,
+      "epoch_time_min": 2.0886614084243775,
+      "epoch": 19
+    }
+  }
 }

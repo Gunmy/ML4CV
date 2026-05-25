@@ -62,6 +62,7 @@ class ArcFaceHead(nn.Module):
         self.th = math.cos(math.pi - m)
         self.mm = math.sin(math.pi - m) * m
 
+    @torch.cuda.amp.custom_fwd(cast_inputs=torch.float32)
     def forward(self, embedding: torch.Tensor,
                 labels: Optional[torch.Tensor] = None) -> torch.Tensor:
         """
