@@ -1,26 +1,2 @@
 {
-  "20260402_175215_baseline_effnetb5_focal_bd5dccca": {
-    "summary": "efficientnet_b5 | 456px | focal(\u03b3=2.0) | lr=0.0001/0.001 | freeze=3ep | bs=12\u00d72 | head=none",
-    "name": "focal_effnetb5",
-    "description": "Focal loss, initialized from baseline",
-    "created": "2026-04-03T16:24:42.867762",
-    "path": "experiments\\20260402_175215_baseline_effnetb5_focal_bd5dccca"
-  },
-  "20260403_163615_arcface_effnetb5_6c8d152f": {
-    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=12\u00d72 | head=arcface(s=30.0,m=0.5)",
-    "name": "arcface_effnetb5",
-    "description": "ArcFace angular margin loss, initialized from baseline",
-    "created": "2026-04-05T01:37:10.277897",
-    "path": "experiments\\20260403_163615_arcface_effnetb5_6c8d152f",
-    "completed": "2026-04-05T01:37:12.100185",
-    "best_epoch": 15,
-    "best_metric": 0.5353319057815846
-  },
-  "20260404_143337_triplet_effnetb5_3ae3db53": {
-    "summary": "efficientnet_b5 | 456px | triplet(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=8\u00d72 | head=none | triplet(m=0.3,semi_hard) | PK(4\u00d74)",
-    "name": "triplet_effnetb5",
-    "description": "Triplet loss with semi-hard mining, PK sampling",
-    "created": "2026-04-05T01:41:55.136319",
-    "path": "experiments\\20260404_143337_triplet_effnetb5_3ae3db53"
-  }
 }

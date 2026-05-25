@@ -522,7 +522,6 @@ def get_eval_config_and_data() -> tuple[ExperimentConfig, dict]:
     config = ExperimentConfig(
         data_dir="data",
         seed=42,
-        stratified_split=True,
     )
     data = prepare_data(config)
 
