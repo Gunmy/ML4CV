@@ -73,7 +73,7 @@ class ExperimentConfig:
     confidence_threshold: float = 0.5       # Below this → predict new_whale
 
     # ── Augmentation ─────────────────────────────────────────────────────
-    aug_random_resized_crop: bool = True
+    aug_random_resized_crop: bool = False
     aug_crop_scale_min: float = 0.85
     aug_crop_scale_max: float = 1.0
     aug_rotation_degrees: int = 10

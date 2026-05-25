@@ -286,6 +286,11 @@ def build_loss(config, class_counts: np.ndarray, device: torch.device) -> nn.Mod
             margin=config.triplet_margin,
             mining=config.triplet_mining,
         )
+    elif config.loss_type == "contrastive":
+        loss_fn = ContrastiveLoss(
+            pos_margin=config.contrastive_pos_margin,
+            neg_margin=config.contrastive_neg_margin,
+        )
     elif config.loss_type == "arcface_ce":
         # For ArcFace head: standard CE, no class weights needed
         # (ArcFace's angular margin handles class separation)
