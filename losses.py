@@ -128,8 +128,10 @@ class TripletLoss(nn.Module):
         dist_mat = torch.cdist(embeddings, embeddings, p=2).pow(2)  # (B, B)
 
         B = embeddings.size(0)
-        labels_eq = labels.unsqueeze(0) == labels.unsqueeze(1)  # (B, B) same-class mask
-        labels_neq = ~labels_eq                                  # (B, B) diff-class mask
+        labels_row = labels.unsqueeze(0)
+        labels_col = labels.unsqueeze(1)
+        labels_eq = (labels_row == labels_col) & (labels_row != -1) & (labels_col != -1)
+        labels_neq = (labels_row != labels_col) | (labels_row == -1) | (labels_col == -1)
 
         # Remove self-pairs from positive mask
         eye_mask = torch.eye(B, dtype=torch.bool, device=embeddings.device)
@@ -140,6 +142,8 @@ class TripletLoss(nn.Module):
         num_valid = 0
 
         for i in range(B):
+            if labels[i] == -1:
+                continue
             # Find positives and negatives for anchor i
             pos_indices = positive_mask[i].nonzero(as_tuple=True)[0]
             neg_indices = labels_neq[i].nonzero(as_tuple=True)[0]
@@ -150,16 +154,7 @@ class TripletLoss(nn.Module):
             for p_idx in pos_indices:
                 d_ap = dist_mat[i, p_idx]
 
-                if self.mining == "hard":
-                    # Hardest negative: closest to anchor
-                    d_an = dist_mat[i, neg_indices].min()
-                    triplet_loss = F.relu(d_ap - d_an + self.margin)
-                    num_valid += 1
-                    if triplet_loss.item() > 0:
-                        num_active += 1
-                    loss = loss + triplet_loss
-
-                elif self.mining == "semi_hard":
+                if self.mining == "semi_hard":
                     # Semi-hard: d(a,p) < d(a,n) < d(a,p) + margin
                     d_an_all = dist_mat[i, neg_indices]
                     semi_hard_mask = (d_an_all > d_ap) & (d_an_all < d_ap + self.margin)
@@ -168,8 +163,8 @@ class TripletLoss(nn.Module):
                         # Pick the hardest semi-hard negative
                         d_an = d_an_all[semi_hard_mask].min()
                     else:
-                        # Fallback to hardest negative
-                        d_an = d_an_all.min()
+                        # Fallback to the next best option
+                        d_an = d_an_all[d_an_all > d_ap].min() if (d_an_all > d_ap).any() else d_an_all.min()
 
                     triplet_loss = F.relu(d_ap - d_an + self.margin)
                     num_valid += 1

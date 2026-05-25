@@ -417,12 +417,37 @@ class PKSampler(torch.utils.data.Sampler):
         return self._num_batches
 
 
+class OpenSetRandomSampler(torch.utils.data.Sampler):
+    """
+    Shuffles ALL indices (including rare whales and new_whale classes)
+    into standard sequential batches to maximize the negative pool
+    available for online semi-hard triplet mining.
+    """
+
+    def __init__(self, labels, batch_size: int = 128):
+        self.batch_size = batch_size
+        self.all_indices = list(range(len(labels)))
+        self.total_images = len(self.all_indices)
+        self._num_batches = max(self.total_images // self.batch_size, 1)
+
+    def __iter__(self):
+        shuffled_indices = np.random.permutation(self.all_indices)
+        for i in range(self._num_batches):
+            start_idx = i * self.batch_size
+            end_idx = start_idx + self.batch_size
+            yield shuffled_indices[start_idx:end_idx].tolist()
+
+    def __len__(self):
+        return self._num_batches
+
+
 def build_metric_dataloaders(config, data: Dict) -> Tuple[DataLoader, DataLoader]:
     """
-    Build DataLoaders for metric learning with PK sampling.
+    Build DataLoaders for metric learning with PK sampling or open-set random batching.
 
-    Train loader uses PK sampling (P identities × K images per identity).
-    Val loader is standard (same as classification — used for retrieval eval).
+    Train loader uses PK sampling (P identities x K images per identity) when enabled.
+    Otherwise, it uses open-set random batching to maximize the negative pool.
+    Val loader is standard (same as classification -- used for retrieval eval).
     """
     image_dir = os.path.join(config.data_dir, "train")
     id_to_idx = data["id_to_idx"]
@@ -438,22 +463,32 @@ def build_metric_dataloaders(config, data: Dict) -> Tuple[DataLoader, DataLoader
         transform=build_train_transform(config),
     )
 
-    pk_sampler = PKSampler(
-        labels=train_labels,
-        p=config.pk_p,
-        k=config.pk_k,
-        min_samples=config.pk_min_samples,
-    )
+    batch_sampler: PKSampler | OpenSetRandomSampler
+    
+    if config.pk_sampling:
+        batch_sampler = PKSampler(
+            labels=train_labels,
+            p=config.pk_p,
+            k=config.pk_k,
+            min_samples=config.pk_min_samples,
+        )
 
-    usable_classes = len(pk_sampler.classes)
-    total_classes = data["num_classes"]
-    print(f"PK Sampling: {usable_classes}/{total_classes} classes have ≥{config.pk_min_samples} images")
-    print(f"  Batch: {config.pk_p} identities × {config.pk_k} images = {pk_sampler.batch_size} per batch")
-    print(f"  ~{len(pk_sampler)} batches per epoch")
+        usable_classes = len(batch_sampler.classes)
+        total_classes = data["num_classes"]
+        print(f"PK Sampling: {usable_classes}/{total_classes} classes have ≥{config.pk_min_samples} images")
+        print(f"  Batch: {config.pk_p} identities × {config.pk_k} images = {batch_sampler.batch_size} per batch")
+        print(f"  ~{len(batch_sampler)} batches per epoch")
+    else:
+        batch_sampler = OpenSetRandomSampler(
+            labels=train_labels,
+            batch_size=config.batch_size,
+        )
+        print(f"Open-set random sampling: {batch_sampler.batch_size} images per batch")
+        print(f"  ~{len(batch_sampler)} batches per epoch")
 
     train_loader = DataLoader(
         train_dataset,
-        batch_sampler=pk_sampler,
+        batch_sampler=batch_sampler,
         num_workers=config.num_workers,
         pin_memory=True,
     )
