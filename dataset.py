@@ -6,13 +6,13 @@ Handles:
   - Whale-specific augmentations (conservative — preserving identity cues)
   - Proper new_whale handling across train/val/test splits
   - Standard DataLoader construction
-  - PK Sampling DataLoader for metric learning (triplet / contrastive loss)
 """
 
 import os
 import numpy as np
 import pandas as pd
-from typing import Tuple, Dict, Optional
+from typing import List, Tuple, Dict, Optional
+from collections import Counter
 
 import torch
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
@@ -251,72 +251,60 @@ def build_dataloaders(config, data: Dict) -> Tuple[DataLoader, DataLoader]:
     return train_loader, val_loader
 
 
-# ── PK Sampling for Metric Learning ──────────────────────────────────────
-
-class PKSampler(torch.utils.data.Sampler):
+# ── Sampling for Metric Learning ──────────────────────────────────────
+class OpenSetRandomSampler(torch.utils.data.Sampler):
     """
-    PK Batch Sampler: samples P identities, K images per identity per batch.
-    (Course slide 24 — FaceNet's batching strategy)
-
-    This ensures every mini-batch contains multiple images per identity,
-    which is required for forming valid anchor-positive pairs for triplet
-    loss or contrastive loss.
-
-    Classes with fewer than K images have their images repeated to reach K.
-    Classes with fewer than min_samples images are excluded entirely.
-
-    Args:
-        labels:      List/array of integer class labels for the dataset.
-        p:           Number of identities per batch.
-        k:           Number of images per identity per batch.
-        min_samples: Minimum images a class needs to be included.
+    Upgraded Singleton-Aware PKSampler.
+    
+    It guarantees:
+      - P common classes * K images (Provides valid anchor-positive pairs for the loss)
+      - N random singleton images (Provides diverse negative boundaries without duplication)
     """
-
-    def __init__(self, labels, p: int = 16, k: int = 4, min_samples: int = 2):
+    def __init__(self, labels, batch_size: int = 16, p: int = 4, k: int = 2):
+        self.batch_size = batch_size
         self.p = p
         self.k = k
+        # Calculate how many slots remain for un-paired singletons
+        self.n = max(0, self.batch_size - (self.p * self.k))
 
-        # Build a dict: class_idx → list of dataset indices
-        self.class_to_indices = {}
+        self.common_classes: Dict[int, List[int]] = {}
+        self.singleton_indices: List[int] = []
+
+        # Group indices into common vs singleton pools based on frequency
+        counts = Counter(labels)
+        
         for idx, label in enumerate(labels):
-            label_int = label if isinstance(label, int) else int(label)
-            if label_int < 0:
-                continue  # Skip new_whale / unknown
-            if label_int not in self.class_to_indices:
-                self.class_to_indices[label_int] = []
-            self.class_to_indices[label_int].append(idx)
+            label_int = int(label)
+            if counts[label_int] < 2:
+                self.singleton_indices.append(idx)
+            else:
+                if label_int not in self.common_classes:
+                    self.common_classes[label_int] = []
+                self.common_classes[label_int].append(idx)
 
-        # Filter out classes with too few samples
-        self.class_to_indices = {
-            c: idxs for c, idxs in self.class_to_indices.items()
-            if len(idxs) >= min_samples
-        }
-        self.classes = list(self.class_to_indices.keys())
-
-        if len(self.classes) < p:
-            print(f"  WARNING: Only {len(self.classes)} classes with ≥{min_samples} "
-                  f"images, but p={p}. Reducing p to {len(self.classes)}.")
-            self.p = len(self.classes)
-
-        self.batch_size = self.p * self.k
-        # Approximate number of batches per epoch
-        total_images = sum(len(v) for v in self.class_to_indices.values())
-        self._num_batches = max(total_images // self.batch_size, 1)
+        self.classes = list(self.common_classes.keys())
+        total_common_images = sum(len(v) for v in self.common_classes.values())
+        
+        # Determine total batches based on the available paired clusters
+        self._num_batches = max(total_common_images // (self.p * self.k), 1)
 
     def __iter__(self):
         for _ in range(self._num_batches):
             batch = []
-            selected_classes = np.random.choice(
-                self.classes, size=self.p, replace=False
-            )
+            
+            # 1. Sample P classes with guaranteed pairs (no replacement within the batch)
+            selected_classes = np.random.choice(self.classes, size=self.p, replace=False)
             for c in selected_classes:
-                indices = self.class_to_indices[c]
-                if len(indices) >= self.k:
-                    chosen = np.random.choice(indices, size=self.k, replace=False)
-                else:
-                    # Repeat images to fill K slots
-                    chosen = np.random.choice(indices, size=self.k, replace=True)
+                indices = self.common_classes[c]
+                chosen = np.random.choice(indices, size=self.k, replace=False)
                 batch.extend(chosen.tolist())
+            
+            # 2. Fill the remaining N slots with unique singleton images
+            if self.n > 0 and len(self.singleton_indices) > 0:
+                replace = len(self.singleton_indices) < self.n
+                singletons_chosen = np.random.choice(self.singleton_indices, size=self.n, replace=replace)
+                batch.extend(singletons_chosen.tolist())
+                
             yield batch
 
     def __len__(self):
@@ -325,10 +313,10 @@ class PKSampler(torch.utils.data.Sampler):
 
 def build_metric_dataloaders(config, data: Dict) -> Tuple[DataLoader, DataLoader]:
     """
-    Build DataLoaders for metric learning with PK sampling.
+    Build DataLoaders for metric learning with open-set random batching.
 
-    Train loader uses PK sampling (P identities × K images per identity).
-    Val loader is standard (same as classification — used for retrieval eval).
+    Otherwise, it uses open-set random batching to maximize the negative pool.
+    Val loader is standard (same as classification -- used for retrieval eval).
     """
     image_dir = os.path.join(config.data_dir, "train")
     id_to_idx = data["id_to_idx"]
@@ -344,22 +332,16 @@ def build_metric_dataloaders(config, data: Dict) -> Tuple[DataLoader, DataLoader
         transform=build_train_transform(config),
     )
 
-    pk_sampler = PKSampler(
+    batch_sampler = OpenSetRandomSampler(
         labels=train_labels,
-        p=config.pk_p,
-        k=config.pk_k,
-        min_samples=config.pk_min_samples,
+        batch_size=config.batch_size,
     )
-
-    usable_classes = len(pk_sampler.classes)
-    total_classes = data["num_classes"]
-    print(f"PK Sampling: {usable_classes}/{total_classes} classes have ≥{config.pk_min_samples} images")
-    print(f"  Batch: {config.pk_p} identities × {config.pk_k} images = {pk_sampler.batch_size} per batch")
-    print(f"  ~{len(pk_sampler)} batches per epoch")
+    print(f"Open-set random sampling: {batch_sampler.batch_size} images per batch")
+    print(f"  ~{len(batch_sampler)} batches per epoch")
 
     train_loader = DataLoader(
         train_dataset,
-        batch_sampler=pk_sampler,
+        batch_sampler=batch_sampler,
         num_workers=config.num_workers,
         pin_memory=True,
     )

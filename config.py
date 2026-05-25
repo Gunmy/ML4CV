@@ -107,12 +107,6 @@ class ExperimentConfig:
     contrastive_pos_margin: float = 0.2   # m+ — max distance for positive pairs before penalty
     contrastive_neg_margin: float = 1.0   # m- — min distance for negative pairs before penalty
 
-    # PK sampling for metric learning (only used when pk_sampling=True)
-    pk_sampling: bool = False          # Use PK sampler instead of random shuffle
-    pk_p: int = 16                     # Number of identities per batch
-    pk_k: int = 4                      # Number of images per identity per batch
-    pk_min_samples: int = 2            # Minimum images a class needs for PK sampling
-
     # Pretrained checkpoint to initialize from (e.g. best baseline before metric learning)
     init_from_checkpoint: Optional[str] = None  # Path to a .pth file
 
@@ -178,6 +172,4 @@ class ExperimentConfig:
             base += f" | triplet(m={self.triplet_margin},{self.triplet_mining})"
         if self.loss_type == "contrastive":
             base += f" | contrastive(m+={self.contrastive_pos_margin},m-={self.contrastive_neg_margin})"
-        if self.pk_sampling:
-            base += f" | PK({self.pk_p}×{self.pk_k})"
         return base
