@@ -9,7 +9,6 @@ from typing import List, Optional, Dict
 import matplotlib.pyplot as plt
 import matplotlib
 import numpy as np
-import torch
 
 from sklearn.manifold import TSNE
 import torch
