@@ -310,8 +310,6 @@ def train(config: ExperimentConfig, data: Dict, device: torch.device,
 
     # ── Training loop ────────────────────────────────────────────────────
     effective_bs = config.batch_size * config.accumulation_steps
-    if config.pk_sampling:
-        effective_bs = config.pk_p * config.pk_k
     manager.log(f"\nStarting training: {config.epochs} epochs, "
                 f"effective batch size = {effective_bs}")
 

@@ -172,6 +172,4 @@ class ExperimentConfig:
             base += f" | triplet(m={self.triplet_margin},{self.triplet_mining})"
         if self.loss_type == "contrastive":
             base += f" | contrastive(m+={self.contrastive_pos_margin},m-={self.contrastive_neg_margin})"
-        if self.pk_sampling:
-            base += f" | PK({self.pk_p}×{self.pk_k})"
         return base
