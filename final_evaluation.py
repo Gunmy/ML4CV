@@ -56,7 +56,7 @@ def get_retrieval_predictions(
     k: int = 5
 ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """
-    Extract Top-K similarities using k-NN against a gallery (Triplet/ArcFace).
+    Extract Top-K UNIQUE class similarities using k-NN against a gallery.
     Returns: (scores, predictions, labels)
     """
     model.eval()
@@ -78,14 +78,39 @@ def get_retrieval_predictions(
         end = min(start + chunk_size, query_emb.size(0))
         q_chunk = query_emb[start:end]
         
-        sims = q_chunk @ gallery_emb.t()  # Cosine similarity
-        scores, topk_indices = sims.topk(k, dim=1)
-        preds = gallery_labels[topk_indices]
+        # Cosine similarity: [chunk_size, num_gallery_images]
+        sims = q_chunk @ gallery_emb.t()  
         
-        all_scores.append(scores)
-        all_preds.append(preds)
+        # Instead of just topk, we sort the ENTIRE gallery row by row
+        sorted_sims, sorted_indices = sims.sort(dim=1, descending=True)
+        sorted_labels = gallery_labels[sorted_indices]
+        
+        # CPU conversion for fast unique filtering
+        sorted_sims_list = sorted_sims.tolist()
+        sorted_labels_list = sorted_labels.tolist()
+        
+        # Filter for Top-K UNIQUE classes per query
+        for i in range(q_chunk.size(0)):
+            unique_labels = []
+            unique_sims = []
+            seen_classes = set()
+            
+            # Walk down the sorted gallery images for this query
+            for sim, label in zip(sorted_sims_list[i], sorted_labels_list[i]):
+                if label not in seen_classes:
+                    seen_classes.add(label)
+                    unique_labels.append(label)
+                    unique_sims.append(sim)
+                    
+                    # Stop as soon as we have K unique whale IDs
+                    if len(unique_labels) == k:
+                        break
+                        
+            all_scores.append(unique_sims)
+            all_preds.append(unique_labels)
 
-    return torch.cat(all_scores, dim=0), torch.cat(all_preds, dim=0), query_labels
+    # Convert the lists of unique predictions back into PyTorch tensors
+    return torch.tensor(all_scores), torch.tensor(all_preds), query_labels
 
 
 # ── 2. Fast Metric Calculations (CPU Math) ─────────────────────────────────
