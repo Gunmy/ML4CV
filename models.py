@@ -22,8 +22,7 @@ from typing import Tuple, List, Optional
 class ArcFaceHead(nn.Module):
     """
     ArcFace: Additive Angular Margin Loss for Deep Face Recognition.
-    (Deng et al., CVPR 2019 — course slides 31–33)
-
+    
     Instead of computing logits as W·f(x), ArcFace:
       1. L2-normalizes both the weight vectors and the embedding
       2. Computes cosine similarity (= dot product of unit vectors)
