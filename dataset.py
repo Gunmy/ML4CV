@@ -11,7 +11,8 @@ Handles:
 import os
 import numpy as np
 import pandas as pd
-from typing import Tuple, Dict, Optional
+from typing import List, Tuple, Dict, Optional
+from collections import Counter
 
 import torch
 from torch.utils.data import Dataset, DataLoader, WeightedRandomSampler
@@ -253,23 +254,58 @@ def build_dataloaders(config, data: Dict) -> Tuple[DataLoader, DataLoader]:
 # ── Sampling for Metric Learning ──────────────────────────────────────
 class OpenSetRandomSampler(torch.utils.data.Sampler):
     """
-    Shuffles ALL indices (including rare whales and new_whale classes)
-    into standard sequential batches to maximize the negative pool
-    available for online semi-hard triplet mining.
+    Upgraded Singleton-Aware PKSampler.
+    
+    It guarantees:
+      - P common classes * K images (Provides valid anchor-positive pairs for the loss)
+      - N random singleton images (Provides diverse negative boundaries without duplication)
     """
-
-    def __init__(self, labels, batch_size: int = 128):
+    def __init__(self, labels, batch_size: int = 16, p: int = 4, k: int = 2):
         self.batch_size = batch_size
-        self.all_indices = list(range(len(labels)))
-        self.total_images = len(self.all_indices)
-        self._num_batches = max(self.total_images // self.batch_size, 1)
+        self.p = p
+        self.k = k
+        # Calculate how many slots remain for un-paired singletons
+        self.n = max(0, self.batch_size - (self.p * self.k))
+
+        self.common_classes: Dict[int, List[int]] = {}
+        self.singleton_indices: List[int] = []
+
+        # Group indices into common vs singleton pools based on frequency
+        counts = Counter(labels)
+        
+        for idx, label in enumerate(labels):
+            label_int = int(label)
+            if counts[label_int] < 2:
+                self.singleton_indices.append(idx)
+            else:
+                if label_int not in self.common_classes:
+                    self.common_classes[label_int] = []
+                self.common_classes[label_int].append(idx)
+
+        self.classes = list(self.common_classes.keys())
+        total_common_images = sum(len(v) for v in self.common_classes.values())
+        
+        # Determine total batches based on the available paired clusters
+        self._num_batches = max(total_common_images // (self.p * self.k), 1)
 
     def __iter__(self):
-        shuffled_indices = np.random.permutation(self.all_indices)
-        for i in range(self._num_batches):
-            start_idx = i * self.batch_size
-            end_idx = start_idx + self.batch_size
-            yield shuffled_indices[start_idx:end_idx].tolist()
+        for _ in range(self._num_batches):
+            batch = []
+            
+            # 1. Sample P classes with guaranteed pairs (no replacement within the batch)
+            selected_classes = np.random.choice(self.classes, size=self.p, replace=False)
+            for c in selected_classes:
+                indices = self.common_classes[c]
+                chosen = np.random.choice(indices, size=self.k, replace=False)
+                batch.extend(chosen.tolist())
+            
+            # 2. Fill the remaining N slots with unique singleton images
+            if self.n > 0 and len(self.singleton_indices) > 0:
+                replace = len(self.singleton_indices) < self.n
+                singletons_chosen = np.random.choice(self.singleton_indices, size=self.n, replace=replace)
+                batch.extend(singletons_chosen.tolist())
+                
+            yield batch
 
     def __len__(self):
         return self._num_batches
