@@ -127,183 +127,89 @@ class WhaleDataset(Dataset):
         return image, label
 
 
-# ── Robust Stratification Helpers ────────────────────────────────────────
-
-def _can_stratify(labels: pd.Series, test_size, ) -> bool:
-    """Check sklearn stratified split feasibility for a binary partition."""
-    n_samples = len(labels)
-    n_classes = labels.nunique()
-    if n_samples < 2 or n_classes < 2:
-        return False
-
-    if isinstance(test_size, float):
-        n_test = int(np.ceil(test_size * n_samples))
-    else:
-        n_test = int(test_size)
-    n_train = n_samples - n_test
-
-    min_class_count = int(labels.value_counts().min())
-    return n_test >= n_classes and n_train >= n_classes and min_class_count >= 2
-
-
-# ── Data Splitting ───────────────────────────────────────────────────────
-
-def prepare_data(config) -> Dict:
+def split_data(df: pd.DataFrame, seed: int = 42):
     """
-    Load CSV, split into train/val/test, build class mappings.
+    Deterministic per-class train/val/test split for long-tail re-ID data.
 
-    Uses a hybrid stratification strategy:
-      - Classes with ≥3 images: stratified split (preserves class proportions)
-      - Rare classes (<3 images): kept in training to avoid impossible constraints
-      - Falls back to shuffled split when stratification isn't feasible
+    Rules:
+      - new_whale: excluded from train, split 50/50 into val/test
+      - 1 image:   train only
+      - 2-3:       train + 1 test
+      - 4+:        train + 1 val + 1 test (proportional for larger classes)
 
-    Returns a dict with:
-      - train_df, val_df, test_df: DataFrames
-      - id_to_idx, idx_to_id: class mappings (known whales only)
-      - class_counts: per-class sample count in training set
-      - num_classes: number of known whale identities
+    Returns train_df, val_df, test_df.
     """
-    csv_path = os.path.join(config.data_dir, "train.csv")
-    df = pd.read_csv(csv_path)
+    rng = np.random.RandomState(seed)
     df = df.sort_values("Image").reset_index(drop=True)
 
-    # ── Split into train_val / test ──────────────────────────────────────
-    if config.stratified_split:
-        # Hybrid strategy:
-        # - Stratify only classes with enough samples for stable splitting.
-        # - Keep ultra-rare classes in training to avoid impossible constraints.
-        class_counts_raw = df["Id"].value_counts()
-        stratifiable_ids = class_counts_raw[class_counts_raw >= 3].index
+    new_whale_df = df[df["Id"] == "new_whale"].reset_index(drop=True)
+    known_df = df[df["Id"] != "new_whale"].reset_index(drop=True)
 
-        common_df = df[df["Id"].isin(stratifiable_ids)].reset_index(drop=True)
-        rare_df = df[~df["Id"].isin(stratifiable_ids)].reset_index(drop=True)
+    train_idx, val_idx, test_idx = [], [], []
 
-        if len(common_df) < 2 or common_df["Id"].nunique() < 2:
-            print("[split] Too few stratifiable classes; using shuffled split on full dataset.")
-            train_val, test = train_test_split(
-                df, test_size=config.test_split,
-                random_state=config.seed, shuffle=True,
-            )
+    for _, group in known_df.groupby("Id"):
+        rows = group.index.tolist()
+        rng.shuffle(rows)
+        n = len(rows)
+
+        # We do a little gambling to decide what ends up in test 
+        if n == 1:
+            n_test = 0
+        elif n == 2:
+            n_test = 1 if rng.random() < 0.33 else 0
+        elif n == 3:
+            n_test = 1 if rng.random() < 0.66 else 0
         else:
-            stratify_common = common_df["Id"]
-            if _can_stratify(stratify_common, config.test_split):
-                train_val, test = train_test_split(
-                    common_df, test_size=config.test_split,
-                    random_state=config.seed, shuffle=True,
-                    stratify=stratify_common,
-                )
-            else:
-                print("[split] Stratified test split infeasible on frequent classes; using shuffled split.")
-                train_val, test = train_test_split(
-                    common_df, test_size=config.test_split,
-                    random_state=config.seed, shuffle=True,
-                )
+            n_test = max(1, round(n * 0.1))
+        remaining = n - n_test
+        n_val = max(1, round(n * 0.1)) if remaining >= 3 else 0
 
-            # Merge rare samples back into train_val (they all go to training)
-            if len(rare_df) > 0:
-                train_val = pd.concat([train_val, rare_df], axis=0, ignore_index=True)
-                train_val = train_val.sample(frac=1.0, random_state=config.seed).reset_index(drop=True)
+        train_idx.extend(rows[: n - n_test - n_val])
+        val_idx.extend(rows[n - n_test - n_val : n - n_test])
+        test_idx.extend(rows[n - n_test :])
 
-        # ── Split train_val into train / val ─────────────────────────────
-        val_relative = config.val_split / (1 - config.test_split)
+    # new_whale → 50/50 val/test
+    nw_idx = list(range(len(new_whale_df)))
+    rng.shuffle(nw_idx)
+    mid = len(nw_idx) // 2
 
-        train_val_common = train_val[train_val["Id"].isin(stratifiable_ids)].reset_index(drop=True)
-        train_val_rare = train_val[~train_val["Id"].isin(stratifiable_ids)].reset_index(drop=True)
+    train = known_df.iloc[train_idx].reset_index(drop=True)
+    val = pd.concat([known_df.iloc[val_idx], new_whale_df.iloc[nw_idx[:mid]]], ignore_index=True)
+    test = pd.concat([known_df.iloc[test_idx], new_whale_df.iloc[nw_idx[mid:]]], ignore_index=True)
 
-        if len(train_val_common) < 2:
-            train_common = train_val_common.copy()
-            val = train_val_common.iloc[0:0].copy()
-            print("[split] No stratifiable samples available for val split; validation set from common is empty.")
-        elif len(train_val_common) >= 2 and train_val_common["Id"].nunique() >= 2 and \
-                _can_stratify(train_val_common["Id"], val_relative):
-            train_common, val = train_test_split(
-                train_val_common, test_size=val_relative,
-                random_state=config.seed, shuffle=True,
-                stratify=train_val_common["Id"],
-            )
-        else:
-            print("[split] Stratified val split infeasible on frequent classes; using shuffled split.")
-            train_common, val = train_test_split(
-                train_val_common, test_size=val_relative,
-                random_state=config.seed, shuffle=True,
-            )
+    return train, val, test
 
-        if len(train_val_rare) > 0:
-            train = pd.concat([train_common, train_val_rare], axis=0, ignore_index=True)
-            train = train.sample(frac=1.0, random_state=config.seed).reset_index(drop=True)
-        else:
-            train = train_common
 
-        train = train.reset_index(drop=True)
-        val = val.reset_index(drop=True)
-        test = test.reset_index(drop=True)
+def prepare_data(config) -> Dict:
+    """Load CSV, split, build class mappings and loss-weighting counts."""
+    df = pd.read_csv(os.path.join(config.data_dir, "train.csv"))
+    train, val, test = split_data(df, seed=config.seed)
 
-    else:
-        train_val, test = train_test_split(
-            df, test_size=config.test_split, random_state=config.seed, shuffle=True)
-        val_relative = config.val_split / (1 - config.test_split)
-        train, val = train_test_split(
-            train_val, test_size=val_relative, random_state=config.seed, shuffle=True)
-
-    # ── Build class mappings from TRAINING known whales only ─────────────
-    train_known = train[train["Id"] != "new_whale"]
-
-    # Optionally filter out extremely rare classes
-    if config.min_samples_per_class > 1:
-        counts = train_known["Id"].value_counts()
-        valid_ids = counts[counts >= config.min_samples_per_class].index
-        train_known = train_known[train_known["Id"].isin(valid_ids)]
-
-    train_labels = sorted(train_known["Id"].unique().tolist())
+    # ── Class mappings from training set ────────────────────────────────
+    train_labels = sorted(train["Id"].unique().tolist())
     id_to_idx = {name: i for i, name in enumerate(train_labels)}
     idx_to_id = {i: name for name, i in id_to_idx.items()}
     num_classes = len(id_to_idx)
 
-    # For training: exclude new_whale (can't train a classifier on "unknown")
-    train_final = train[train["Id"] != "new_whale"].reset_index(drop=True)
-    # Further filter to only classes in our mapping
-    train_final = train_final[train_final["Id"].isin(id_to_idx)].reset_index(drop=True)
-
-    # For validation: keep everything (including new_whale) if configured
-    if config.include_new_whale_in_val:
-        val_final = val.reset_index(drop=True)
-    else:
-        val_final = val[val["Id"] != "new_whale"].reset_index(drop=True)
-        val_final = val_final[val_final["Id"].isin(id_to_idx)].reset_index(drop=True)
-
-    # Compute class counts for loss weighting
+    # ── Class counts for loss weighting ─────────────────────────────────
     class_counts = np.zeros(num_classes, dtype=np.float64)
-    for whale_id, count in train_final["Id"].value_counts().items():
-        if whale_id in id_to_idx:
-            class_counts[id_to_idx[whale_id]] = count
+    for whale_id, count in train["Id"].value_counts().items():
+        class_counts[id_to_idx[whale_id]] = count
 
-    # ── Summary stats ────────────────────────────────────────────────────
-    n_new_train = (train["Id"] == "new_whale").sum()
-    n_new_val = (val["Id"] == "new_whale").sum()
-    n_new_test = (test["Id"] == "new_whale").sum()
-
-    print(f"Dataset split:")
-    print(f"  Train:  {len(train_final):>6d} images, {num_classes} known classes "
-          f"(filtered {n_new_train} new_whale)")
-    print(f"  Val:    {len(val_final):>6d} images "
-          f"({n_new_val} are new_whale)")
-    print(f"  Test:   {len(test):>6d} images "
-          f"({n_new_test} are new_whale)")
-    if len(class_counts) > 0:
-        print(f"  Class distribution: min={int(class_counts.min())} "
-              f"median={int(np.median(class_counts))} "
-              f"max={int(class_counts.max())} samples/class")
+    print(f"Split (seed={config.seed}): "
+          f"train={len(train)} ({num_classes} cls), "
+          f"val={len(val)} ({(val['Id'] == 'new_whale').sum()} new_whale), "
+          f"test={len(test)} ({(test['Id'] == 'new_whale').sum()} new_whale)")
 
     return {
-        "train_df": train_final,
-        "val_df": val_final,
+        "train_df": train,
+        "val_df": val,
         "test_df": test,
         "id_to_idx": id_to_idx,
         "idx_to_id": idx_to_id,
         "class_counts": class_counts,
         "num_classes": num_classes,
     }
-
 
 # ── DataLoader Construction ──────────────────────────────────────────────
 
@@ -571,17 +477,6 @@ def build_test_loader(config, data: Dict) -> DataLoader:
     """
     image_dir = os.path.join(config.data_dir, "train")
     test_df = data["test_df"].copy()
-    
-    # Identify whales in the test set that are NOT in the training mapping
-    train_known_ids = set(data["id_to_idx"].keys())
-    unseen_mask = ~test_df["Id"].isin(train_known_ids) & (test_df["Id"] != "new_whale")
-    
-    num_unseen = unseen_mask.sum()
-    if num_unseen > 0:
-        print(f"[test loader] Relabeling {num_unseen} test images to 'new_whale' "
-              f"(identity not present in train set).")
-        
-    test_df.loc[unseen_mask, "Id"] = "new_whale"
     
     test_dataset = WhaleDataset(
         df=test_df,
