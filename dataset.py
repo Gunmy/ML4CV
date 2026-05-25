@@ -153,11 +153,8 @@ def split_data(df: pd.DataFrame, seed: int = 42):
         n = len(rows)
 
         n_test = 0 if n == 1 else max(1, round(n * 0.1))
-        n_test = min(n_test, n - 1)
-
         remaining = n - n_test
         n_val = max(1, round(n * 0.1)) if remaining >= 3 else 0
-        n_val = min(n_val, remaining - 1)
 
         train_idx.extend(rows[: n - n_test - n_val])
         val_idx.extend(rows[n - n_test - n_val : n - n_test])
