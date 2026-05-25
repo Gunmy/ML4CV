@@ -152,10 +152,13 @@ def split_data(df: pd.DataFrame, seed: int = 42):
         rng.shuffle(rows)
         n = len(rows)
 
+        # We do a little gambling to decide what ends up in test 
         if n == 1:
             n_test = 0
         elif n == 2:
-            n_test = 1 if rng.random() < 0.5 else 0
+            n_test = 1 if rng.random() < 0.33 else 0
+        elif n == 3:
+            n_test = 1 if rng.random() < 0.66 else 0
         else:
             n_test = max(1, round(n * 0.1))
         remaining = n - n_test
@@ -207,7 +210,6 @@ def prepare_data(config) -> Dict:
         "class_counts": class_counts,
         "num_classes": num_classes,
     }
-
 
 # ── DataLoader Construction ──────────────────────────────────────────────
 
