@@ -274,7 +274,7 @@ def train(config: ExperimentConfig, data: Dict, device: torch.device,
     manager.log(f"Loss: {config.loss_type} | Head: {config.head_type}")
 
     # ── Build dataloaders ────────────────────────────────────────────────
-    if config.pk_sampling:
+    if config.loss_type in ["triplet", "contrastive"]:
         from dataset import build_metric_dataloaders
         train_loader, val_loader = build_metric_dataloaders(config, data)
         steps_per_epoch = len(train_loader)
@@ -310,8 +310,6 @@ def train(config: ExperimentConfig, data: Dict, device: torch.device,
 
     # ── Training loop ────────────────────────────────────────────────────
     effective_bs = config.batch_size * config.accumulation_steps
-    if config.pk_sampling:
-        effective_bs = config.pk_p * config.pk_k
     manager.log(f"\nStarting training: {config.epochs} epochs, "
                 f"effective batch size = {effective_bs}")
 
