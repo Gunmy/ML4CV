@@ -353,8 +353,8 @@ def train(config: ExperimentConfig, data: Dict, device: torch.device,
         if config.loss_type in ("triplet", "contrastive"):
             # For triplet: do retrieval evaluation instead of classification eval
             from evaluation import evaluate_retrieval
-            from dataset import build_dataloaders as build_std_loaders
-            gallery_loader, _ = build_std_loaders(config, data)
+            from dataset import build_retrieval_eval_loaders
+            gallery_loader, _ = build_retrieval_eval_loaders(config, data)
             val_metrics = evaluate_retrieval(
                 model, gallery_loader, val_loader, config, device,
             )

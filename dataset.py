@@ -432,3 +432,31 @@ def get_eval_config_and_data() -> tuple[ExperimentConfig, dict]:
     data = prepare_data(config)
 
     return config, data
+
+def build_test_loader(config, data: Dict) -> DataLoader:
+    """
+    Build DataLoader for the test set.
+    
+    Automatically preprocesses the test DataFrame so that any whale identities 
+    not seen in the training set are reclassified as 'new_whale'.
+    """
+    image_dir = os.path.join(config.data_dir, "train")
+    test_df = data["test_df"].copy()
+    
+    test_dataset = WhaleDataset(
+        df=test_df,
+        image_dir=image_dir,
+        id_to_idx=data["id_to_idx"],
+        transform=build_val_transform(config),
+    )
+    
+    test_loader = DataLoader(
+        test_dataset,
+        batch_size=config.batch_size * 2,
+        shuffle=False,
+        num_workers=config.num_workers,
+        pin_memory=True,
+        drop_last=False,
+    )
+    
+    return test_loader
