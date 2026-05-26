@@ -152,17 +152,48 @@ def split_data(df: pd.DataFrame, seed: int = 42):
         rng.shuffle(rows)
         n = len(rows)
 
-        # We do a little gambling to decide what ends up in test 
+        # We do a little gambling to 
+        # decide what ends up in test and val
+        # and to increase fairness
         if n == 1:
             n_test = 0
+            n_val  = 0
         elif n == 2:
-            n_test = 1 if rng.random() < 0.33 else 0
+            if rng.random() < 0.5:
+                if rng.random() < 0.5:
+                    n_test = 1
+                    n_val  = 0
+                else:
+                    n_test = 0
+                    n_val  = 1
+            else:
+                n_test = 0
+                n_val  = 0
         elif n == 3:
-            n_test = 1 if rng.random() < 0.66 else 0
+            if rng.random() < 0.75:
+                if rng.random() < 0.5:
+                    n_test = 1
+                    n_val  = 0
+                else:
+                    n_test = 0
+                    n_val  = 1
+            else:
+                n_test = 0
+                n_val  = 0
         else:
-            n_test = max(1, round(n * 0.1))
-        remaining = n - n_test
-        n_val = max(1, round(n * 0.1)) if remaining >= 3 else 0
+            if rng.random() < 0.5:
+                n_test = 1
+                n_val  = 0
+            else:
+                n_test = 0
+                n_val  = 1
+            for i in range(3, n):
+                if rng.random() < 0.1:
+                    if rng.random() < 0.5:
+                        n_test += 1
+                    else:
+                        n_val  += 1
+
 
         train_idx.extend(rows[: n - n_test - n_val])
         val_idx.extend(rows[n - n_test - n_val : n - n_test])
@@ -410,6 +441,7 @@ def get_eval_config_and_data() -> tuple[ExperimentConfig, dict]:
     config = ExperimentConfig(
         data_dir="data",
         seed=42,
+        include_new_whale_in_val=True
     )
     data = prepare_data(config)
 

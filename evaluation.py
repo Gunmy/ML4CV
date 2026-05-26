@@ -17,14 +17,14 @@ from tqdm.auto import tqdm
 from typing import Dict
 
 @torch.no_grad()
-def evaluate(
+def val_loss(
     model: nn.Module,
     loader,
     criterion,
     config,
     device: torch.device,
     epoch: int,
-) -> Dict[str, float]:
+) -> float:
     """
     Evaluate the model on a validation/test set.
 
@@ -47,16 +47,6 @@ def evaluate(
     running_loss = 0.0
     loss_total = 0
 
-    # Known whale metrics
-    known_correct = 0
-    known_top5_correct = 0
-    known_total = 0
-
-    # Confidence tracking
-    known_conf_sum = 0.0
-    new_whale_conf_sum = 0.0
-    new_whale_total = 0
-
     pbar = tqdm(loader, desc=f"  Val   Ep {epoch}", leave=False)
 
     for images, labels in pbar:
@@ -77,56 +67,9 @@ def evaluate(
             running_loss += loss.item() * known_mask.sum().item()
             loss_total += known_mask.sum().item()
 
-        # Probabilities and predictions
-        probs = torch.softmax(logits, dim=1)
-        max_probs, preds = probs.max(dim=1)
-
-        # ── Known whale samples ──────────────────────────────────────────
-        if known_mask.sum() > 0:
-            known_probs = probs[known_mask]
-            known_preds = preds[known_mask]
-            known_labels = labels[known_mask]
-            known_conf = max_probs[known_mask]
-
-            # Top-1
-            known_correct += (known_preds == known_labels).sum().item()
-
-            # Top-5
-            top5_preds = known_probs.topk(min(5, known_probs.size(1)), dim=1).indices
-            known_top5_correct += (top5_preds == known_labels.unsqueeze(1)).any(dim=1).sum().item()
-
-            known_total += known_mask.sum().item()
-            known_conf_sum += known_conf.sum().item()
-
-        # ── New whale samples (label == -1) ──────────────────────────────
-        unknown_mask = labels == -1
-        if unknown_mask.sum() > 0:
-            new_whale_conf_sum += max_probs[unknown_mask].sum().item()
-            new_whale_total += unknown_mask.sum().item()
-
-        # Progress
-        if known_total > 0:
-            pbar.set_postfix({
-                "top1": f"{known_correct / known_total * 100:.1f}%",
-                "top5": f"{known_top5_correct / known_total * 100:.1f}%",
-            })
-
-    # ── Compute final metrics ────────────────────────────────────────────
     val_loss = running_loss / max(loss_total, 1)
-    val_known_acc = known_correct / max(known_total, 1)
-    val_known_top5_acc = known_top5_correct / max(known_total, 1)
-    val_mean_known_conf = known_conf_sum / max(known_total, 1)
-    val_mean_new_whale_conf = new_whale_conf_sum / max(new_whale_total, 1)
 
-    return {
-        "val_loss": val_loss,
-        "val_known_acc": val_known_acc,
-        "val_known_top5_acc": val_known_top5_acc,
-        "val_mean_known_conf": val_mean_known_conf,
-        "val_mean_new_whale_conf": val_mean_new_whale_conf,
-        "val_known_total": known_total,
-        "val_new_whale_total": new_whale_total,
-    }
+    return val_loss
 
 
 # ── Embedding Extraction ─────────────────────────────────────────────────
@@ -151,124 +94,3 @@ def extract_embeddings(model, loader, device, normalize: bool = True):
         all_labels.append(labels)
 
     return torch.cat(all_embeddings, dim=0), torch.cat(all_labels, dim=0)
-
-
-# ── Retrieval Evaluation ─────────────────────────────────────────────────
-
-@torch.no_grad()
-def evaluate_retrieval(
-    model,
-    gallery_loader,
-    query_loader,
-    config,
-    device,
-) -> Dict[str, float]:
-    """
-    Evaluate embedding quality via k-NN retrieval.
-    (Course slides 8–9: face recognition as k-NN in embedding space)
-
-    Builds a gallery from gallery_loader, then for each query:
-      1. Compute query embedding
-      2. Find k nearest neighbors in the gallery by cosine similarity
-      3. Check if the correct identity is among the top-k
-
-    For new_whale queries: correct if the nearest neighbor distance exceeds
-    a threshold (i.e. nothing in the gallery is close enough).
-
-    Args:
-        model:          Trained model.
-        gallery_loader: DataLoader for gallery images (typically training set).
-        query_loader:   DataLoader for query images (typically validation set).
-        config:         ExperimentConfig (for confidence_threshold).
-        device:         Target device.
-
-    Returns: Dict with
-        retrieval_recall@1 - Recall top 1 for known whales
-        retrieval_recall@5 - Recall top 5 for known whales
-        retrieval_known_total - How many known whales (not new whale)
-        retrieval_new_whale_total - How many new whales (these are ignored mostly)
-        retrieval_mean_pos_sim - Average cosine similarity between known whale queries and their correct matches within the top-k retrieved result
-        retrieval_mean_neg_sim - Average cosine similarity between known whale queries and incorrect matches within the top-k retrieved results
-
-    """
-    model.eval()
-    k = 5
-
-    # ── Build gallery ────────────────────────────────────────────────────
-    gallery_emb, gallery_labels = extract_embeddings(model, gallery_loader, device)
-
-    # Remove any new_whale from gallery (they're not identifiable)
-    known_mask = gallery_labels >= 0
-    gallery_emb = gallery_emb[known_mask]
-    gallery_labels = gallery_labels[known_mask]
-
-    print(f"  Gallery: {gallery_emb.size(0)} embeddings, "
-          f"{gallery_labels.unique().size(0)} identities")
-
-    # ── Query and evaluate ───────────────────────────────────────────────
-    query_emb, query_labels = extract_embeddings(model, query_loader, device)
-
-    # Cosine similarity (embeddings are already L2-normalized)
-    # Process in chunks to avoid OOM on large galleries
-    chunk_size = 256
-    recall_at_1 = 0
-    recall_at_k = 0
-    known_total = 0
-    new_whale_total = 0
-    mean_pos_sim = 0.0
-    mean_neg_sim = 0.0
-    pos_count = 0
-    neg_count = 0
-
-    for start in range(0, query_emb.size(0), chunk_size):
-        end = min(start + chunk_size, query_emb.size(0))
-        q_batch = query_emb[start:end]        # (chunk, D)
-        q_labels = query_labels[start:end]     # (chunk,)
-
-        # Cosine similarities: (chunk, gallery_size)
-        sims = q_batch @ gallery_emb.t()
-
-        # Top-k most similar gallery items
-        topk_sims, topk_indices = sims.topk(k, dim=1)  # (chunk, k)
-        topk_labels = gallery_labels[topk_indices]       # (chunk, k)
-
-        for i in range(q_batch.size(0)):
-            # q_labels is already the current chunk slice, so index locally.
-            true_label = q_labels[i].item()
-
-            if true_label == -1:
-                # new_whale: should NOT match anything closely
-                new_whale_total += 1
-            else:
-                # Known whale: correct if true label appears in top-k
-                known_total += 1
-                retrieved_labels = topk_labels[i].tolist()
-
-                if true_label == retrieved_labels[0]:
-                    recall_at_1 += 1
-                if true_label in retrieved_labels:
-                    recall_at_k += 1
-
-                # Track positive/negative similarity distributions
-                for j in range(k):
-                    sim_val = topk_sims[i, j].item()
-                    if retrieved_labels[j] == true_label:
-                        mean_pos_sim += sim_val
-                        pos_count += 1
-                    else:
-                        mean_neg_sim += sim_val
-                        neg_count += 1
-
-    metrics = {
-        "retrieval_recall@1": recall_at_1 / max(known_total, 1),
-        "retrieval_recall@5": recall_at_k / max(known_total, 1),
-        "retrieval_known_total": known_total,
-        "retrieval_new_whale_total": new_whale_total,
-        "retrieval_mean_pos_sim": mean_pos_sim / max(pos_count, 1),
-        "retrieval_mean_neg_sim": mean_neg_sim / max(neg_count, 1),
-    }
-
-    print(f"  Recall@1: {metrics['retrieval_recall@1']*100:.2f}%  "
-          f"Recall@{k}: {metrics['retrieval_recall@5']*100:.2f}%  ")
-
-    return metrics

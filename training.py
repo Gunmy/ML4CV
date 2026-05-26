@@ -12,6 +12,7 @@ Features:
 """
 
 import time
+from final_evaluation import evaluate_base_metrics, get_classifier_predictions, get_retrieval_predictions
 import torch
 import torch.nn as nn
 import numpy as np
@@ -32,7 +33,6 @@ from models import (
     set_bn_eval, build_optimizer, build_scheduler, print_model_summary,
 )
 from losses import build_loss
-from evaluation import evaluate
 
 
 def set_seed(seed: int):
@@ -350,19 +350,26 @@ def train(config: ExperimentConfig, data: Dict, device: torch.device,
         # We pass criterion; evaluate() handles ignore_index for unknown labels.
         if config.loss_type in ("triplet", "contrastive"):
             # For triplet: do retrieval evaluation instead of classification eval
-            from evaluation import evaluate_retrieval
             from dataset import build_retrieval_eval_loaders
-            gallery_loader, _ = build_retrieval_eval_loaders(config, data)
-            val_metrics = evaluate_retrieval(
-                model, gallery_loader, val_loader, config, device,
-            )
+            gallery_loader, query_loader = build_retrieval_eval_loaders(config, data)
+            #val_metrics = evaluate_retrieval(
+            #    model, gallery_loader, val_loader, config, device,
+            #)
+
+            scores, predictions, labels = get_retrieval_predictions(model, gallery_loader, query_loader, device, 5)
+            val_metrics = evaluate_base_metrics(scores, predictions, labels)
+
             # Note: We do NOT calculate a validation loss for triplet loss.
             # Triplet loss requires every batch to have multiple images of the same whale.
             # Since random validation batches almost never have matching whales, the loss would just be 0.
             # Instead, we measure performance using retrieval_recall@1, which simply tests 
             # if the closest image in the database is the correct whale.
         else:
-            val_metrics = evaluate(model, val_loader, criterion, config, device, epoch)
+            from evaluation import val_loss
+            scores, predictions, labels = get_classifier_predictions(model, val_loader, device, 5)
+            val_metrics = evaluate_base_metrics(scores, predictions, labels)
+            val_loss = val_loss(model, val_loader, criterion, config, device, epoch)
+            val_metrics["val_loss"] = val_loss
 
         # ── Step epoch-level scheduler ───────────────────────────────────
         if scheduler is not None and not scheduler_is_batch:
