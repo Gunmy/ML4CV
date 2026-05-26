@@ -243,6 +243,78 @@ def plot_evaluation(
     plt.tight_layout()
     plt.show()
 
+
+def plot_evaluation_pair(result_a: Dict, result_b: Dict, title: str = ""):
+    """
+    Stack two evaluation plots (score distribution + MAP@5 curve) for side-by-side comparison.
+
+    Expects each result dict to contain:
+      - test_scores, test_labels
+      - thresholds, map_scores
+      - best_threshold, final_test_map5
+      - label
+    """
+    fig, axes = plt.subplots(2, 2, figsize=(16, 10))
+
+    def plot_single(ax1, ax2, result):
+        scores = result["test_scores"]
+        labels = result["test_labels"]
+        thresholds = result["thresholds"]
+        map5_scores = result["map_scores"]
+        best_threshold = result["best_threshold"]
+        best_map5 = result["final_test_map5"]
+        model_name = result["label"]
+
+        known_scores = scores[labels != -1, 0].numpy()
+        new_scores = scores[labels == -1, 0].numpy()
+
+        data_to_plot = [known_scores]
+        tick_labels = ["Known Whales\n(Should be high)"]
+        colors = ["#2ca02c"]
+        if len(new_scores) > 0:
+            data_to_plot.append(new_scores)
+            tick_labels.append("New Whales\n(Should be low)")
+            colors.append("#d62728")
+
+        bplot = ax1.boxplot(
+            data_to_plot,
+            labels=tick_labels,
+            patch_artist=True,
+            widths=0.5,
+            boxprops=dict(facecolor="white", color="black"),
+            medianprops=dict(color="black", linewidth=2),
+        )
+        for patch, color in zip(bplot["boxes"], colors):
+            patch.set_facecolor(color)
+            patch.set_alpha(0.6)
+
+        ax1.axhline(best_threshold, color="black", linestyle="dashed", linewidth=2)
+        ax1.set_title(f"Score Distribution\n({model_name})")
+        ax1.set_ylabel("Score (Softmax or Cosine)")
+        ax1.grid(True, axis="y", alpha=0.3)
+
+        ax2.plot(thresholds, map5_scores, color="#1f77b4", linewidth=2)
+        ax2.plot(best_threshold, best_map5, marker="o", markersize=8, color="#ff7f0e")
+        ax2.vlines(
+            x=best_threshold,
+            ymin=min(map5_scores),
+            ymax=best_map5,
+            colors="#ff7f0e",
+            linestyles="dashed",
+            alpha=0.7,
+        )
+        ax2.set_title(f"MAP@5 vs Threshold\n({model_name})")
+        ax2.set_xlabel("Score Threshold")
+        ax2.set_ylabel("MAP@5")
+        ax2.grid(True, alpha=0.3)
+
+    plot_single(axes[0, 0], axes[0, 1], result_a)
+    plot_single(axes[1, 0], axes[1, 1], result_b)
+    if title:
+        fig.suptitle(title, fontsize=14)
+    plt.tight_layout()
+    plt.show()
+
 def plot_embedding_tsne(model, loader, data, device, title="",
                         max_samples=500, top_k_classes=10,
                         min_samples_per_class=5, combine_loaders=None):
