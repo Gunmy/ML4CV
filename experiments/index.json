@@ -74,22 +74,67 @@
     "summary": "efficientnet_b5 | 456px | ce(\u03b3=2.0) | lr=0.0001/0.001 | freeze=3ep | bs=32\u00d72",
     "name": "baseline_effnetb5_cross_entropy",
     "description": "EfficientNet-B5 with plain Cross Entropy, no class weights, no smoothing",
-    "created": "2026-05-26T13:06:07.606263",
+    "created": "2026-05-26T15:43:05.860996",
     "path": "experiments/20260524_230915_baseline_effnetb5_cross_entrop_a55bddfe",
-    "completed": "2026-05-26T13:53:54.324349",
-    "best_epoch": 18,
-    "best_metric": 0.615494966506958,
+    "completed": "2026-05-26T16:49:35.536553",
+    "best_epoch": 22,
+    "best_metric": 0.557881772518158,
     "final_metrics": {
-      "train_loss": 0.001863441359034568,
-      "train_acc": 0.9990190582959642,
-      "grad_norm": 0.10080933428876701,
-      "lr": 5.902041038830252e-06,
-      "known_recall@1": 0.6111907958984375,
-      "known_recall@5": 0.7446197867393494,
-      "mean_known_conf": 0.7565321922302246,
-      "mean_new_whale_conf": 0.6314238905906677,
-      "epoch_time_min": 2.1260910789171854,
-      "epoch": 21
+      "train_loss": 0.002247615572835865,
+      "train_acc": 0.9985183189655172,
+      "grad_norm": 0.15182342033849322,
+      "lr": 1e-06,
+      "known_recall@1": 0.557881772518158,
+      "known_recall@5": 0.6637930870056152,
+      "mean_known_conf": 0.7276421189308167,
+      "mean_new_whale_conf": 0.6594942808151245,
+      "val_loss": 3.8566810344827585,
+      "epoch_time_min": 2.3154693722724913,
+      "epoch": 24
+    }
+  },
+  "20260526_165102_baseline_effnetb5_focal_334689fd": {
+    "summary": "efficientnet_b5 | 456px | focal(\u03b3=2.0) | lr=0.0001/0.001 | freeze=3ep | bs=32\u00d72",
+    "name": "baseline_effnetb5_focal",
+    "description": "EfficientNet-B5 with Focal Loss, freeze 3 epochs, 456px",
+    "created": "2026-05-26T16:51:02.774063",
+    "path": "experiments/20260526_165102_baseline_effnetb5_focal_334689fd"
+  },
+  "20260526_165513_baseline_effnetb5_focal_334689fd": {
+    "summary": "efficientnet_b5 | 456px | focal(\u03b3=2.0) | lr=0.0001/0.001 | freeze=3ep | bs=32\u00d72",
+    "name": "baseline_effnetb5_focal",
+    "description": "EfficientNet-B5 with Focal Loss, freeze 3 epochs, 456px",
+    "created": "2026-05-26T17:04:49.395127",
+    "path": "experiments/20260526_165513_baseline_effnetb5_focal_334689fd"
+  },
+  "20260526_171442_baseline_effnetb5_focal_d1f9c83d": {
+    "summary": "efficientnet_b5 | 456px | focal(\u03b3=2.0) | lr=0.0001/0.001 | freeze=3ep | bs=16\u00d72",
+    "name": "baseline_effnetb5_focal",
+    "description": "EfficientNet-B5 with Focal Loss, freeze 3 epochs, 456px",
+    "created": "2026-05-26T17:14:42.248005",
+    "path": "experiments/20260526_171442_baseline_effnetb5_focal_d1f9c83d"
+  },
+  "20260526_171819_baseline_effnetb5_focal_d1f9c83d": {
+    "summary": "efficientnet_b5 | 456px | focal(\u03b3=2.0) | lr=0.0001/0.001 | freeze=3ep | bs=16\u00d72",
+    "name": "baseline_effnetb5_focal",
+    "description": "EfficientNet-B5 with Focal Loss, freeze 3 epochs, 456px",
+    "created": "2026-05-26T18:32:09.008611",
+    "path": "experiments/20260526_171819_baseline_effnetb5_focal_d1f9c83d",
+    "completed": "2026-05-26T18:55:43.163676",
+    "best_epoch": 27,
+    "best_metric": 0.552955687046051,
+    "final_metrics": {
+      "train_loss": 1.0626004334419004,
+      "train_acc": 0.9986559139784946,
+      "grad_norm": 3.1982715723340602,
+      "lr": 3.948521376934985e-05,
+      "known_recall@1": 0.5209359526634216,
+      "known_recall@5": 0.633004903793335,
+      "mean_known_conf": 0.2260255068540573,
+      "mean_new_whale_conf": 0.19864314794540405,
+      "val_loss": 3.675137732416538,
+      "epoch_time_min": 2.3062815189361574,
+      "epoch": 33
     }
   }
 }
