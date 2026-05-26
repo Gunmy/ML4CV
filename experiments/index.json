@@ -69,5 +69,27 @@
       "epoch_time_min": 2.0886614084243775,
       "epoch": 19
     }
+  },
+  "20260524_230915_baseline_effnetb5_cross_entrop_a55bddfe": {
+    "summary": "efficientnet_b5 | 456px | ce(\u03b3=2.0) | lr=0.0001/0.001 | freeze=3ep | bs=32\u00d72",
+    "name": "baseline_effnetb5_cross_entropy",
+    "description": "EfficientNet-B5 with plain Cross Entropy, no class weights, no smoothing",
+    "created": "2026-05-26T13:06:07.606263",
+    "path": "experiments/20260524_230915_baseline_effnetb5_cross_entrop_a55bddfe",
+    "completed": "2026-05-26T13:53:54.324349",
+    "best_epoch": 18,
+    "best_metric": 0.615494966506958,
+    "final_metrics": {
+      "train_loss": 0.001863441359034568,
+      "train_acc": 0.9990190582959642,
+      "grad_norm": 0.10080933428876701,
+      "lr": 5.902041038830252e-06,
+      "known_recall@1": 0.6111907958984375,
+      "known_recall@5": 0.7446197867393494,
+      "mean_known_conf": 0.7565321922302246,
+      "mean_new_whale_conf": 0.6314238905906677,
+      "epoch_time_min": 2.1260910789171854,
+      "epoch": 21
+    }
   }
 }

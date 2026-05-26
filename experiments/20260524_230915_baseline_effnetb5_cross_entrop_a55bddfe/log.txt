@@ -1,0 +1,54 @@
+[13:06:07] New experiment: 20260524_230915_baseline_effnetb5_cross_entrop_a55bddfe
+[13:06:07] Config: efficientnet_b5 | 456px | ce(γ=2.0) | lr=0.0001/0.001 | freeze=3ep | bs=32×2
+[13:06:07] Resume mode active for experiment: 20260524_230915_baseline_effnetb5_cross_entrop_a55bddfe
+[13:06:08] Backbone FROZEN for first 3 epochs
+[13:06:08] Loss: ce | Head: linear
+[13:06:08] No checkpoint found at experiments/20260524_230915_baseline_effnetb5_cross_entrop_a55bddfe/checkpoints/latest.pth. Starting from scratch.
+[13:06:08] 
+Starting training: 25 epochs, effective batch size = 64
+[13:07:56] Epoch   0/25 [FROZEN] | Train Loss: 8.3830  Acc: 1.2% | Val known_recall@1: 4.7%  LR: 1.00e-03 | Time: 1.8m
+[13:08:16]   ✓ New best model saved (epoch 0, known_recall@1=0.0473)
+[13:10:08] Epoch   1/25 [FROZEN] | Train Loss: 4.8654  Acc: 23.8% | Val known_recall@1: 27.7%  LR: 9.96e-04 | Time: 1.9m
+[13:10:08]   ✓ New best model saved (epoch 1, known_recall@1=0.2769)
+[13:11:46] Epoch   2/25 [FROZEN] | Train Loss: 1.8402  Acc: 78.1% | Val known_recall@1: 39.0%  LR: 9.83e-04 | Time: 1.6m
+[13:12:06]   ✓ New best model saved (epoch 2, known_recall@1=0.3902)
+[13:12:06] 
+============================================================
+[13:12:06] BACKBONE UNFROZEN at epoch 3
+[13:12:06] ============================================================
+
+[13:14:04] Epoch   3/25 [UNFROZEN] | Train Loss: 0.8717  Acc: 90.4% | Val known_recall@1: 37.0%  LR: 1.00e-04 | Time: 2.0m
+[13:16:16] Epoch   4/25 [UNFROZEN] | Train Loss: 0.7559  Acc: 87.2% | Val known_recall@1: 41.8%  LR: 9.94e-05 | Time: 2.0m
+[13:16:26]   ✓ New best model saved (epoch 4, known_recall@1=0.4175)
+[13:18:27] Epoch   5/25 [UNFROZEN] | Train Loss: 0.3148  Acc: 94.2% | Val known_recall@1: 39.5%  LR: 9.78e-05 | Time: 2.0m
+[13:20:24] Epoch   6/25 [UNFROZEN] | Train Loss: 0.1895  Acc: 95.9% | Val known_recall@1: 44.0%  LR: 9.51e-05 | Time: 1.9m
+[13:20:35]   ✓ New best model saved (epoch 6, known_recall@1=0.4405)
+[13:22:36] Epoch   7/25 [UNFROZEN] | Train Loss: 0.1282  Acc: 97.4% | Val known_recall@1: 46.1%  LR: 9.14e-05 | Time: 2.0m
+[13:22:47]   ✓ New best model saved (epoch 7, known_recall@1=0.4605)
+[13:25:45] Epoch   8/25 [UNFROZEN] | Train Loss: 0.0822  Acc: 98.2% | Val known_recall@1: 48.8%  LR: 8.68e-05 | Time: 3.0m
+[13:25:56]   ✓ New best model saved (epoch 8, known_recall@1=0.4878)
+[13:28:01] Epoch   9/25 [UNFROZEN] | Train Loss: 0.0742  Acc: 98.4% | Val known_recall@1: 47.6%  LR: 8.14e-05 | Time: 2.1m
+[13:30:15] Epoch  10/25 [UNFROZEN] | Train Loss: 0.0495  Acc: 99.0% | Val known_recall@1: 47.1%  LR: 7.52e-05 | Time: 2.1m
+[13:32:15] Epoch  11/25 [UNFROZEN] | Train Loss: 0.0340  Acc: 99.3% | Val known_recall@1: 53.4%  LR: 6.86e-05 | Time: 1.8m
+[13:32:26]   ✓ New best model saved (epoch 11, known_recall@1=0.5337)
+[13:34:24] Epoch  12/25 [UNFROZEN] | Train Loss: 0.0325  Acc: 99.5% | Val known_recall@1: 52.1%  LR: 6.15e-05 | Time: 2.0m
+[13:36:22] Epoch  13/25 [UNFROZEN] | Train Loss: 0.0141  Acc: 99.7% | Val known_recall@1: 52.2%  LR: 5.42e-05 | Time: 1.8m
+[13:38:28] Epoch  14/25 [UNFROZEN] | Train Loss: 0.0088  Acc: 99.9% | Val known_recall@1: 57.2%  LR: 4.68e-05 | Time: 1.9m
+[13:38:38]   ✓ New best model saved (epoch 14, known_recall@1=0.5725)
+[13:40:34] Epoch  15/25 [UNFROZEN] | Train Loss: 0.0066  Acc: 99.9% | Val known_recall@1: 59.4%  LR: 3.95e-05 | Time: 1.9m
+[13:40:44]   ✓ New best model saved (epoch 15, known_recall@1=0.5940)
+[13:42:50] Epoch  16/25 [UNFROZEN] | Train Loss: 0.0050  Acc: 99.9% | Val known_recall@1: 60.4%  LR: 3.24e-05 | Time: 2.1m
+[13:43:01]   ✓ New best model saved (epoch 16, known_recall@1=0.6040)
+[13:45:05] Epoch  17/25 [UNFROZEN] | Train Loss: 0.0041  Acc: 99.9% | Val known_recall@1: 60.4%  LR: 2.57e-05 | Time: 2.1m
+[13:47:19] Epoch  18/25 [UNFROZEN] | Train Loss: 0.0036  Acc: 99.9% | Val known_recall@1: 61.5%  LR: 1.96e-05 | Time: 2.1m
+[13:47:20]   ✓ New best model saved (epoch 18, known_recall@1=0.6155)
+[13:49:23] Epoch  19/25 [UNFROZEN] | Train Loss: 0.0024  Acc: 99.9% | Val known_recall@1: 60.8%  LR: 1.42e-05 | Time: 2.1m
+[13:51:35] Epoch  20/25 [UNFROZEN] | Train Loss: 0.0021  Acc: 99.9% | Val known_recall@1: 61.4%  LR: 9.60e-06 | Time: 2.0m
+[13:53:53] Epoch  21/25 [UNFROZEN] | Train Loss: 0.0019  Acc: 99.9% | Val known_recall@1: 61.1%  LR: 5.90e-06 | Time: 2.1m
+[13:53:54] 
+Early stopping triggered (no improvement for 3 epochs)
+[13:53:54] 
+Training complete in 47.8 minutes.
+[13:53:54] Best epoch: 18 (known_recall@1=0.6155)
+[14:03:59] Loading checkpoint: experiments/20260524_230915_baseline_effnetb5_cross_entrop_a55bddfe/checkpoints/best.pth
+[14:04:00] Resuming from epoch 19

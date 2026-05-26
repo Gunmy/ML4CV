@@ -410,6 +410,7 @@ def get_eval_config_and_data() -> tuple[ExperimentConfig, dict]:
     config = ExperimentConfig(
         data_dir="data",
         seed=42,
+        include_new_whale_in_val=True
     )
     data = prepare_data(config)
 
