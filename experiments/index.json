@@ -136,5 +136,112 @@
       "epoch_time_min": 2.3062815189361574,
       "epoch": 33
     }
+  },
+  "20260526_192543_arcface_effnetb5_61717356": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=32\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-26T19:25:43.281365",
+    "path": "experiments/20260526_192543_arcface_effnetb5_61717356"
+  },
+  "20260526_203428_arcface_effnetb5_61717356": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=32\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-26T20:34:28.565988",
+    "path": "experiments/20260526_203428_arcface_effnetb5_61717356"
+  },
+  "20260526_203557_arcface_effnetb5_b1de1182": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=24\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-26T20:35:57.638283",
+    "path": "experiments/20260526_203557_arcface_effnetb5_b1de1182"
+  },
+  "20260526_204235_arcface_effnetb5_b1de1182": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=24\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-26T20:42:35.288280",
+    "path": "experiments/20260526_204235_arcface_effnetb5_b1de1182",
+    "completed": "2026-05-26T22:28:27.608589",
+    "best_epoch": 24,
+    "best_metric": 0.5862069129943848,
+    "final_metrics": {
+      "train_loss": 0.1989963563938378,
+      "train_acc": 0.998937074829932,
+      "grad_norm": 19.85118994258699,
+      "lr": 2.72478099883809e-05,
+      "known_recall@1": 0.5862069129943848,
+      "known_recall@5": 0.6736453175544739,
+      "mean_known_conf": 0.6186991333961487,
+      "mean_new_whale_conf": 0.5947431921958923,
+      "epoch_time_min": 4.1025291641553245,
+      "epoch": 24
+    }
+  },
+  "/root/ML4CV/experiments/20260526_204235_arcface_effnetb5_b1de1182": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=24\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-26T22:31:40.127224",
+    "path": "/root/ML4CV/experiments/20260526_204235_arcface_effnetb5_b1de1182"
+  },
+  "20260526_224849_arcface_effnetb5_208d7e63": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=24\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-27T14:39:49.346591",
+    "path": "experiments/20260526_224849_arcface_effnetb5_208d7e63"
+  },
+  "20260527_144112_arcface_effnetb5_208d7e63": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=24\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-27T14:41:12.388684",
+    "path": "experiments/20260527_144112_arcface_effnetb5_208d7e63",
+    "completed": "2026-05-27T15:07:44.841976",
+    "best_epoch": 2,
+    "best_metric": 0.42733991146087646,
+    "final_metrics": {
+      "train_loss": NaN,
+      "train_acc": 0.0004032258064516129,
+      "grad_norm": NaN,
+      "lr": 4.587100550141231e-05,
+      "known_recall@1": 0.0,
+      "known_recall@5": 0.001231527072377503,
+      "mean_known_conf": NaN,
+      "mean_new_whale_conf": NaN,
+      "epoch_time_min": 2.8536571145057676,
+      "epoch": 8
+    }
+  },
+  "20260527_152320_arcface_effnetb5_208d7e63": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=24\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-27T15:23:20.278082",
+    "path": "experiments/20260527_152320_arcface_effnetb5_208d7e63"
+  },
+  "20260527_154706_arcface_effnetb5_208d7e63": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=24\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-27T15:47:06.736580",
+    "path": "experiments/20260527_154706_arcface_effnetb5_208d7e63"
+  },
+  "20260527_160504_arcface_effnetb5_dbfd5eb7": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=24\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-27T16:05:04.943434",
+    "path": "experiments/20260527_160504_arcface_effnetb5_dbfd5eb7"
+  },
+  "20260527_161118_arcface_effnetb5_eb23419b": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=16\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-27T16:11:18.910562",
+    "path": "experiments/20260527_161118_arcface_effnetb5_eb23419b"
   }
 }
