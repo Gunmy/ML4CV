@@ -243,5 +243,12 @@
     "description": "ArcFace angular margin loss, initialized from baseline",
     "created": "2026-05-27T16:11:18.910562",
     "path": "experiments/20260527_161118_arcface_effnetb5_eb23419b"
+  },
+  "20260527_163408_arcface_effnetb5_eb23419b": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=16\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-27T16:34:08.080855",
+    "path": "experiments/20260527_163408_arcface_effnetb5_eb23419b"
   }
 }

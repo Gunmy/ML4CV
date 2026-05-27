@@ -1,0 +1,7 @@
+[16:34:08] New experiment: 20260527_163408_arcface_effnetb5_eb23419b
+[16:34:08] Config: efficientnet_b5 | 456px | arcface_ce(γ=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=16×2 | head=arcface(s=30.0,m=0.5)
+[16:34:08] No matching resume target found. Starting new experiment.
+[16:34:08] Backbone FROZEN for first 2 epochs
+[16:34:09] Loss: arcface_ce | Head: arcface
+[16:34:09] 
+Starting training: 35 epochs, effective batch size = 32
