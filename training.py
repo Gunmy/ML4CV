@@ -90,7 +90,7 @@ def train_one_epoch(
                     embeddings = model(images)
                     loss = criterion(embeddings, labels) / config.accumulation_steps
                 elif is_arcface:
-                    logits = model(images, labels=labels)
+                    logits, emb = model(images, labels=labels, return_embedding=True)
                     loss = criterion(logits, labels) / config.accumulation_steps
                 else:
                     logits = model(images)
@@ -101,7 +101,7 @@ def train_one_epoch(
                 embeddings = model(images)
                 loss = criterion(embeddings, labels) / config.accumulation_steps
             elif is_arcface:
-                logits = model(images, labels=labels)
+                logits, emb = model(images, labels=labels, return_embedding=True)
                 loss = criterion(logits, labels) / config.accumulation_steps
             else:
                 logits = model(images)
@@ -143,7 +143,14 @@ def train_one_epoch(
                 # new_whales out from training, but nice to have
                 mask = labels != -1
                 if mask.sum() > 0:
-                    preds = logits[mask].argmax(dim=1)
+                    if is_arcface:
+                        # We normally want to use galleries and queries
+                        # instead for arcface, but because the training
+                        # set is the gallery, we have to use the classifier head
+                        clean_logits = model.classifier(emb.float(), labels=None)
+                        preds = clean_logits[mask].argmax(dim=1)
+                    else:
+                        preds = logits[mask].argmax(dim=1)
                     correct += (preds == labels[mask]).sum().item()
                     total += mask.sum().item()
                 running_loss += loss.item() * config.accumulation_steps * images.size(0)
@@ -348,7 +355,7 @@ def train(config: ExperimentConfig, data: Dict, device: torch.device,
         # even though the model has no classifier, we can still extract embeddings 
         # and do retrieval using them.
         # We pass criterion; evaluate() handles ignore_index for unknown labels.
-        if config.loss_type in ("triplet", "contrastive"):
+        if config.loss_type in ["triplet", "contrastive", "arcface_ce"]:
             # For triplet: do retrieval evaluation instead of classification eval
             from dataset import build_retrieval_eval_loaders
             gallery_loader, query_loader = build_retrieval_eval_loaders(config, data)

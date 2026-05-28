@@ -85,7 +85,7 @@ class ArcFaceHead(nn.Module):
 
         # ── Training: apply angular margin to the correct class ──────────
         # cos(θ + m) = cos(θ)cos(m) - sin(θ)sin(m)
-        sine = torch.sqrt(1.0 - cosine.pow(2).clamp(0, 1))
+        sine = torch.sqrt((1.0 - cosine.pow(2)).clamp(min=1e-7))
         cos_theta_plus_m = cosine * self.cos_m - sine * self.sin_m
 
         # Numerical safety: if θ + m > π, use a linear fallback

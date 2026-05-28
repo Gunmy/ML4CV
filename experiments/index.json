@@ -136,5 +136,206 @@
       "epoch_time_min": 2.3062815189361574,
       "epoch": 33
     }
+  },
+  "20260526_192543_arcface_effnetb5_61717356": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=32\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-26T19:25:43.281365",
+    "path": "experiments/20260526_192543_arcface_effnetb5_61717356"
+  },
+  "20260526_203428_arcface_effnetb5_61717356": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=32\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-26T20:34:28.565988",
+    "path": "experiments/20260526_203428_arcface_effnetb5_61717356"
+  },
+  "20260526_203557_arcface_effnetb5_b1de1182": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=24\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-26T20:35:57.638283",
+    "path": "experiments/20260526_203557_arcface_effnetb5_b1de1182"
+  },
+  "20260526_204235_arcface_effnetb5_b1de1182": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=24\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-26T20:42:35.288280",
+    "path": "experiments/20260526_204235_arcface_effnetb5_b1de1182",
+    "completed": "2026-05-26T22:28:27.608589",
+    "best_epoch": 24,
+    "best_metric": 0.5862069129943848,
+    "final_metrics": {
+      "train_loss": 0.1989963563938378,
+      "train_acc": 0.998937074829932,
+      "grad_norm": 19.85118994258699,
+      "lr": 2.72478099883809e-05,
+      "known_recall@1": 0.5862069129943848,
+      "known_recall@5": 0.6736453175544739,
+      "mean_known_conf": 0.6186991333961487,
+      "mean_new_whale_conf": 0.5947431921958923,
+      "epoch_time_min": 4.1025291641553245,
+      "epoch": 24
+    }
+  },
+  "/root/ML4CV/experiments/20260526_204235_arcface_effnetb5_b1de1182": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=24\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-26T22:31:40.127224",
+    "path": "/root/ML4CV/experiments/20260526_204235_arcface_effnetb5_b1de1182"
+  },
+  "20260526_224849_arcface_effnetb5_208d7e63": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=24\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-27T14:39:49.346591",
+    "path": "experiments/20260526_224849_arcface_effnetb5_208d7e63"
+  },
+  "20260527_144112_arcface_effnetb5_208d7e63": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=24\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-27T14:41:12.388684",
+    "path": "experiments/20260527_144112_arcface_effnetb5_208d7e63",
+    "completed": "2026-05-27T15:07:44.841976",
+    "best_epoch": 2,
+    "best_metric": 0.42733991146087646,
+    "final_metrics": {
+      "train_loss": NaN,
+      "train_acc": 0.0004032258064516129,
+      "grad_norm": NaN,
+      "lr": 4.587100550141231e-05,
+      "known_recall@1": 0.0,
+      "known_recall@5": 0.001231527072377503,
+      "mean_known_conf": NaN,
+      "mean_new_whale_conf": NaN,
+      "epoch_time_min": 2.8536571145057676,
+      "epoch": 8
+    }
+  },
+  "20260527_152320_arcface_effnetb5_208d7e63": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=24\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-27T15:23:20.278082",
+    "path": "experiments/20260527_152320_arcface_effnetb5_208d7e63"
+  },
+  "20260527_154706_arcface_effnetb5_208d7e63": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=24\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-27T15:47:06.736580",
+    "path": "experiments/20260527_154706_arcface_effnetb5_208d7e63"
+  },
+  "20260527_160504_arcface_effnetb5_dbfd5eb7": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=24\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-27T16:05:04.943434",
+    "path": "experiments/20260527_160504_arcface_effnetb5_dbfd5eb7"
+  },
+  "20260527_161118_arcface_effnetb5_eb23419b": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=16\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-27T16:11:18.910562",
+    "path": "experiments/20260527_161118_arcface_effnetb5_eb23419b"
+  },
+  "20260527_163408_arcface_effnetb5_eb23419b": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=2ep | bs=16\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-27T16:34:08.080855",
+    "path": "experiments/20260527_163408_arcface_effnetb5_eb23419b"
+  },
+  "20260527_164148_arcface_effnetb5_1b8a8583": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=4ep | bs=16\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-27T16:41:48.704541",
+    "path": "experiments/20260527_164148_arcface_effnetb5_1b8a8583"
+  },
+  "20260527_171122_arcface_effnetb5_2bb8ad39": {
+    "summary": "efficientnet_b5 | 456px | arcface_ce(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=3ep | bs=16\u00d72 | head=arcface(s=30.0,m=0.5)",
+    "name": "arcface_effnetb5",
+    "description": "ArcFace angular margin loss, initialized from baseline",
+    "created": "2026-05-27T17:11:22.469704",
+    "path": "experiments/20260527_171122_arcface_effnetb5_2bb8ad39",
+    "completed": "2026-05-27T19:16:01.305981",
+    "best_epoch": 23,
+    "best_metric": 0.6539409160614014,
+    "final_metrics": {
+      "train_loss": 0.6349669219986085,
+      "train_acc": 0.9985215053763441,
+      "grad_norm": 25.503414796657317,
+      "lr": 4.506999183894055e-06,
+      "known_recall@1": 0.6514778137207031,
+      "known_recall@5": 0.732758641242981,
+      "mean_known_conf": 0.6721349358558655,
+      "mean_new_whale_conf": 0.6371500492095947,
+      "epoch_time_min": 4.1591113924980165,
+      "epoch": 29
+    }
+  },
+  "20260527_194056_triplet_effnetb5_81147d41": {
+    "summary": "efficientnet_b5 | 456px | triplet(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=3ep | bs=24\u00d72 | head=none | triplet(m=0.3,semi_hard)",
+    "name": "triplet_effnetb5",
+    "description": "Triplet loss with semi-hard mining, open-set random sampling",
+    "created": "2026-05-27T19:40:56.324985",
+    "path": "experiments/20260527_194056_triplet_effnetb5_81147d41"
+  },
+  "20260527_194129_triplet_effnetb5_e7fa63cf": {
+    "summary": "efficientnet_b5 | 456px | triplet(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=3ep | bs=24\u00d72 | head=none | triplet(m=0.3,semi_hard)",
+    "name": "triplet_effnetb5",
+    "description": "Triplet loss with semi-hard mining, open-set random sampling",
+    "created": "2026-05-27T19:50:53.216067",
+    "path": "experiments/20260527_194129_triplet_effnetb5_e7fa63cf"
+  },
+  "20260527_195128_triplet_effnetb5_e7fa63cf": {
+    "summary": "efficientnet_b5 | 456px | triplet(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=3ep | bs=24\u00d72 | head=none | triplet(m=0.3,semi_hard)",
+    "name": "triplet_effnetb5",
+    "description": "Triplet loss with semi-hard mining, open-set random sampling",
+    "created": "2026-05-27T19:51:28.212503",
+    "path": "experiments/20260527_195128_triplet_effnetb5_e7fa63cf",
+    "completed": "2026-05-27T21:57:18.864660",
+    "best_epoch": 22,
+    "best_metric": 0.7019704580307007,
+    "final_metrics": {
+      "train_loss": 0.005905467446665375,
+      "train_acc": 0.0,
+      "grad_norm": 1.9204915948465568,
+      "lr": 3.400897869469779e-05,
+      "known_recall@1": 0.7019704580307007,
+      "known_recall@5": 0.7980295419692993,
+      "mean_known_conf": 0.905096173286438,
+      "mean_new_whale_conf": 0.8851888179779053,
+      "epoch_time_min": 3.8636728048324587,
+      "epoch": 28
+    }
+  },
+  "20260527_224910_contrastive_effnetb5_31746b7c": {
+    "summary": "efficientnet_b5 | 456px | contrastive(\u03b3=2.0) | lr=5e-05/0.0005 | freeze=3ep | bs=32\u00d72 | head=none | contrastive(m+=0.2,m-=1.0)",
+    "name": "contrastive_effnetb5",
+    "description": "Contrastive loss with positive margin, PK sampling",
+    "created": "2026-05-27T22:49:10.693662",
+    "path": "experiments/20260527_224910_contrastive_effnetb5_31746b7c",
+    "completed": "2026-05-28T00:21:26.329237",
+    "best_epoch": 11,
+    "best_metric": 0.7807881832122803,
+    "final_metrics": {
+      "train_loss": 0.00013627290299327843,
+      "train_acc": 0.0,
+      "grad_norm": 0.0162828092282752,
+      "lr": 4.487400555497339e-05,
+      "known_recall@1": 0.7549260854721069,
+      "known_recall@5": 0.8374384045600891,
+      "mean_known_conf": 0.897325873374939,
+      "mean_new_whale_conf": 0.8592498302459717,
+      "epoch_time_min": 4.945733722050985,
+      "epoch": 17
+    }
   }
 }
