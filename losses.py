@@ -220,6 +220,10 @@ class ContrastiveLoss(nn.Module):
             Scalar loss. Also stores self.num_active_pairs and
             self.num_valid_pairs for monitoring.
         """
+
+        # Enforce normalisation
+        embeddings = F.normalize(embeddings, p=2, dim=1)
+
         # Pairwise Euclidean distances
         dist_mat = torch.cdist(embeddings, embeddings, p=2)  # (B, B)
 
@@ -227,15 +231,19 @@ class ContrastiveLoss(nn.Module):
         labels_eq = labels.unsqueeze(0) == labels.unsqueeze(1)
         eye_mask = torch.eye(B, dtype=torch.bool, device=embeddings.device)
 
-        pos_mask = labels_eq & ~eye_mask   # same class, not self
-        neg_mask = ~labels_eq              # different class
+        valid = (labels != -1)
+        valid_mask = valid.unsqueeze(0) & valid.unsqueeze(1)
+        pos_mask = labels_eq & ~eye_mask & valid_mask # same class, not self
+        neg_mask = ~labels_eq & valid_mask            # different class
 
         # Positive pairs: penalize if distance > pos_margin
         pos_distances = dist_mat[pos_mask]
+        # relu does the same as max(0, D-m)
         pos_loss = F.relu(pos_distances - self.pos_margin).pow(2)
 
         # Negative pairs: penalize if distance < neg_margin
         neg_distances = dist_mat[neg_mask]
+        # relu does the same as max(0, m-D)
         neg_loss = F.relu(self.neg_margin - neg_distances).pow(2)
 
         # Track for monitoring (same pattern as TripletLoss)
