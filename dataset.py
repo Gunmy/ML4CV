@@ -129,15 +129,7 @@ class WhaleDataset(Dataset):
 
 def split_data(df: pd.DataFrame, seed: int = 42):
     """
-    Deterministic per-class train/val/test split for long-tail re-ID data.
-
-    Rules:
-      - new_whale: excluded from train, split 50/50 into val/test
-      - 1 image:   train only
-      - 2-3:       train + 1 test
-      - 4+:        train + 1 val + 1 test (proportional for larger classes)
-
-    Returns train_df, val_df, test_df.
+    Deterministic per-class train/val/test split.
     """
     rng = np.random.RandomState(seed)
     df = df.sort_values("Image").reset_index(drop=True)
